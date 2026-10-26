@@ -1,0 +1,19 @@
+# Scratch & Temporary Testing Scripts
+scratch/
+node_modules/
+package-lock.json
+
+# Environment & Credentials
+.env
+*.log
+
+# OS Generated Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE & Editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
