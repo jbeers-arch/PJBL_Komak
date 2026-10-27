@@ -14,9 +14,6 @@ requireAuth(['akuntan']);
                 </span>
                 <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Transfer Keperluan Cuci</h2>
             </div>
-            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-                Distribusi stok bahan cuci operasional (deterjen, sabun, pewangi, softener &amp; packaging) antar-cabang outlet laundry.
-            </p>
         </div>
         <div class="flex items-center space-x-2">
             <button onclick="openTransferModal()" class="inline-flex items-center px-4 py-2.5 rounded-2xl bg-gradient-to-r from-blue-700 to-indigo-600 hover:from-blue-600 hover:to-indigo-500 text-white text-xs font-bold shadow-md shadow-blue-500/20 transition-all duration-200 transform hover:-translate-y-0.5 cursor-pointer">

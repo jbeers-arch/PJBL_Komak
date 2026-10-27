@@ -11,7 +11,6 @@ requireAuth(['akuntan']);
             <div class="flex items-center space-x-2">
                 <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Jurnal Penyesuaian (Adjusting Entries)</h2>
             </div>
-            <p class="text-xs sm:text-sm text-slate-500 mt-1">Pencatatan penyesuaian periodik: penyusutan aset tetap, pemakaian perlengkapan, akrual, dan selisih stok.</p>
         </div>
         <button onclick="openAdjustmentModal()" class="inline-flex items-center px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-md shadow-amber-500/20 transition-all duration-200 transform hover:-translate-y-0.5">
             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>

@@ -11,7 +11,6 @@ requireAuth(['akuntan']);
             <div class="flex items-center space-x-2">
                 <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Manajemen Cabang &amp; Kasir</h2>
             </div>
-            <p class="text-xs sm:text-sm text-slate-500 mt-1">Kelola outlet cabang operasional, penugasan staf kasir, dan pantau penjualan harian.</p>
         </div>
         <div class="flex flex-wrap items-center gap-2">
             <button onclick="openAddAccessModal()" class="inline-flex items-center px-4 py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-sm transition-all duration-200 transform hover:-translate-y-0.5">

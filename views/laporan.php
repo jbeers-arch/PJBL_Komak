@@ -9,7 +9,6 @@ requireAuth(['akuntan']);
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-slate-200/80">
         <div>
             <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Laporan Keuangan Terpadu</h2>
-            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Laporan Laba Rugi, Posisi Keuangan (Neraca), Arus Kas, Perubahan Ekuitas, dan Analisis Rasio.</p>
         </div>
         <div class="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
             <button onclick="exportActiveReportToCSV()" class="w-full sm:w-auto justify-center inline-flex items-center px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-all">

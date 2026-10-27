@@ -11,7 +11,6 @@ requireAuth(['akuntan']);
             <div class="flex items-center space-x-2">
                 <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Tutup Buku &amp; Siklus Akuntansi</h2>
             </div>
-            <p class="text-xs sm:text-sm text-slate-500 mt-1">Penutupan akun nominal (pendapatan & beban), pemindahan laba bersih ke ekuitas, dan penguncian periode transaksi.</p>
         </div>
         <div class="flex items-center space-x-2">
             <a href="laporan.php" class="inline-flex items-center px-3.5 py-2 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all">
@@ -89,28 +88,24 @@ requireAuth(['akuntan']);
                 <span id="period-lock-indicator" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
             </div>
             <h3 id="period-lock-status" class="text-base font-extrabold text-slate-900 mt-2">Terbuka (Aktif)</h3>
-            <p id="period-lock-desc" class="text-[11px] text-slate-400 mt-1">Transaksi dapat dicatat.</p>
         </div>
 
         <!-- Card 2: Penguncian Terakhir -->
         <div class="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs">
             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Tutup Buku Terakhir</span>
             <h3 id="latest-closed-period" class="text-base font-extrabold text-slate-900 mt-2">-</h3>
-            <p id="latest-closed-date" class="text-[11px] text-slate-400 mt-1 font-mono">Belum ada penutupan</p>
         </div>
 
         <!-- Card 3: Pendapatan Berjalan -->
         <div class="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs">
             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Pendapatan Berjalan</span>
             <h3 id="current-revenue-stat" data-kfx-roll class="text-base font-black text-slate-900 mt-2 font-mono">Rp 0</h3>
-            <p class="text-[11px] text-slate-400 mt-1">Akun 4101 & 4102</p>
         </div>
 
         <!-- Card 4: Estimasi Laba Bersih -->
         <div class="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs">
             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Estimasi Laba Bersih</span>
             <h3 id="current-profit-stat" data-kfx-roll class="text-base font-black text-emerald-600 mt-2 font-mono">Rp 0</h3>
-            <p class="text-[11px] text-slate-400 mt-1">Siap dipindahkan ke ekuitas</p>
         </div>
     </div>
 
@@ -120,7 +115,6 @@ requireAuth(['akuntan']);
         <div class="lg:col-span-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-4">
             <div class="pb-2 border-b border-slate-100">
                 <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Parameter Tutup Buku</h3>
-                <p class="text-[11px] text-slate-400 mt-0.5">Tentukan periode dan akun penampung laba.</p>
             </div>
 
             <form id="closing-config-form" onsubmit="generateClosingPreview(event)" class="space-y-3.5 text-xs">
@@ -149,7 +143,6 @@ requireAuth(['akuntan']);
                         <option value="3201">[3201] Laba Ditahan (Retained Earnings)</option>
                         <option value="3101">[3101] Modal Pemilik (Owner's Equity)</option>
                     </select>
-                    <p class="text-[10px] text-slate-400 mt-1">SAK-EMKM merekomendasikan Laba Ditahan untuk UMKM berbadan usaha.</p>
                 </div>
 
                 <div>
@@ -171,7 +164,6 @@ requireAuth(['akuntan']);
             <div class="flex items-center justify-between pb-2 border-b border-slate-100">
                 <div>
                     <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Pratinjau Jurnal Penutup (Closing Entries)</h3>
-                    <p class="text-[11px] text-slate-400 mt-0.5">Memindahkan saldo akun nominal ke Ikhtisar Laba Rugi dan Ekuitas.</p>
                 </div>
                 <span id="preview-balance-badge" class="hidden px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80">Balanced</span>
             </div>
@@ -255,7 +247,6 @@ requireAuth(['akuntan']);
         <div class="flex items-center justify-between pb-3 border-b border-slate-100">
             <div>
                 <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Riwayat Penguncian Periode (Tutup Buku)</h3>
-                <p class="text-xs text-slate-500 mt-0.5">Daftar periode akuntansi yang telah ditutup dan dilindungi oleh sistem.</p>
             </div>
             <button onclick="loadPeriodStatus()" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center space-x-1.5 transition-colors">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
@@ -339,10 +330,12 @@ requireAuth(['akuntan']);
 
             if (d.latest_lock) {
                 document.getElementById('latest-closed-period').innerText = d.latest_lock.period_name;
-                document.getElementById('latest-closed-date').innerText = `Per: ${d.latest_lock.period_end}`;
+                const dateEl = document.getElementById('latest-closed-date');
+                if (dateEl) dateEl.innerText = `Per: ${d.latest_lock.period_end}`;
             } else {
                 document.getElementById('latest-closed-period').innerText = 'Belum Ada';
-                document.getElementById('latest-closed-date').innerText = 'Periode perdana aktif';
+                const dateEl = document.getElementById('latest-closed-date');
+                if (dateEl) dateEl.innerText = '';
             }
 
             // Render History Table

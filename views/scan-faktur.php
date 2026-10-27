@@ -13,7 +13,6 @@ requireAuth(['akuntan']);
         <div class="flex items-center space-x-2">
             <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Pemindaian Faktur &amp; Auto-Jurnal</h2>
         </div>
-        <p class="text-xs sm:text-sm text-slate-500 mt-1">Ekstraksi digital faktur/kuitansi & pembuatan draf jurnal otomatis.</p>
     </div>
 
 

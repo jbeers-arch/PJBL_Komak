@@ -11,9 +11,6 @@ requireAuth(['akuntan']);
             <div class="flex items-center space-x-2">
                 <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Jejak Audit &amp; Aktivitas</h2>
             </div>
-            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-                Catatan terperinci riwayat login pengguna dan setiap perubahan mutasi data pada sistem.
-            </p>
         </div>
         <div class="flex items-center space-x-2.5">
             <button onclick="exportAuditCsv()" class="inline-flex items-center px-4 py-2.5 rounded-2xl bg-slate-900 dark:bg-white dark:text-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-sm transition-all duration-200">

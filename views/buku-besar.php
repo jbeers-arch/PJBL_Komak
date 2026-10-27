@@ -11,7 +11,6 @@ requireAuth(['akuntan']);
             <div class="flex items-center space-x-2">
                 <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Buku Besar (General Ledger)</h2>
             </div>
-            <p class="text-xs sm:text-sm text-slate-500 mt-1">Kartu riwayat transaksi, mutasi debit/kredit, dan akumulasi saldo per akun.</p>
         </div>
     </div>
 

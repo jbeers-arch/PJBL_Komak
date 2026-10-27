@@ -11,7 +11,6 @@ requireAuth(['akuntan']);
             <div class="flex items-center space-x-2">
                 <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Katalog Layanan &amp; Bahan Laundry</h2>
             </div>
-            <p class="text-xs sm:text-sm text-slate-500 mt-1">Kelola paket layanan laundry kiloan, satuan, dry cleaning, dan bahan pendukung operasional.</p>
         </div>
         <div class="flex items-center space-x-2.5">
             <button onclick="openTransferModal()" class="inline-flex items-center px-4 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold shadow-md shadow-emerald-500/20 transition-all duration-200 transform hover:-translate-y-0.5">

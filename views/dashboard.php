@@ -11,7 +11,6 @@ requireAuth(['akuntan']);
             <div class="flex items-center space-x-2.5">
                 <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Dashboard Monitoring SIA Pusat</h2>
             </div>
-            <p class="text-xs sm:text-sm text-slate-500 mt-1">Pemantauan omset penjualan kasir cabang, likuiditas kas, dan otomasi akuntansi.</p>
         </div>
         <div class="flex flex-wrap items-center gap-2">
             <a href="scan-faktur.php" class="inline-flex items-center px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white text-xs font-bold shadow-md shadow-indigo-500/20 transition-all duration-200 transform hover:-translate-y-0.5">

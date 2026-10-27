@@ -11,7 +11,6 @@ requireAuth(['akuntan']);
             <div class="flex items-center space-x-2">
                 <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Bagan Akun (Chart of Accounts)</h2>
             </div>
-            <p class="text-xs sm:text-sm text-slate-500 mt-1">Struktur klasifikasi akun keuangan standar untuk penjurnalan dan pelaporan akuntansi.</p>
         </div>
         <button onclick="openAddAccountModal()" class="inline-flex items-center px-4 py-2.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white text-xs font-bold shadow-md shadow-indigo-500/20 transition-all duration-200 transform hover:-translate-y-0.5">
             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
