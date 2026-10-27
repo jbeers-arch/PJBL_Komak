@@ -13,10 +13,6 @@ requireAuth(['akuntan']);
             </div>
         </div>
         <div class="flex items-center space-x-2.5">
-            <span class="inline-flex items-center px-3 py-1.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/40 text-emerald-700 dark:text-emerald-400 text-xs font-bold shadow-2xs">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse mr-1.5"></span>
-                Live Sync (WIB)
-            </span>
             <button onclick="exportAuditCsv()" class="inline-flex items-center px-4 py-2.5 rounded-2xl bg-slate-900 dark:bg-white dark:text-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-sm transition-all duration-200">
                 <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                 Unduh CSV
