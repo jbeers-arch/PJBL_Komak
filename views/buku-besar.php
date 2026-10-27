@@ -54,20 +54,6 @@ requireAuth(['akuntan']);
         </div>
     </div>
 
-    <!-- Quick Switcher Akun Aktif Bermutasi -->
-    <div id="active-accounts-container" class="bg-gradient-to-r from-indigo-50/70 to-slate-50 p-4 rounded-3xl border border-indigo-100 shadow-xs space-y-2">
-        <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-indigo-900 flex items-center space-x-1.5">
-                <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                <span>Akun yang Memiliki Mutasi Transaksi pada Periode Ini (Klik Cepat):</span>
-            </span>
-            <span id="active-acc-count" class="text-[10px] font-bold text-indigo-700 bg-indigo-100/70 px-2 py-0.5 rounded-full font-mono">0 Akun</span>
-        </div>
-        <div id="active-accounts-chips" class="flex flex-wrap items-center gap-1.5 pt-1">
-            <span class="text-xs text-slate-400 italic">Memuat aktivitas akun...</span>
-        </div>
-    </div>
-
     <!-- Summary KPI Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <!-- Card 1: Saldo Awal -->
@@ -75,7 +61,6 @@ requireAuth(['akuntan']);
             <div class="absolute top-0 left-0 right-0 h-1 bg-slate-300"></div>
             <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Saldo Awal Periode</span>
             <h4 id="box-initial-balance" class="text-2xl font-black text-slate-800 mt-2 font-mono">Rp 0</h4>
-            <span class="text-[11px] text-slate-400 mt-1 block">Posisi sebelum tanggal mulai</span>
         </div>
 
         <!-- Card 2: Mutasi Periode -->
@@ -87,7 +72,6 @@ requireAuth(['akuntan']);
                 <span class="text-slate-300">|</span>
                 <span id="box-period-credit" class="text-sm font-bold text-indigo-700 font-mono bg-indigo-50 px-2 py-0.5 rounded-md">K: Rp 0</span>
             </div>
-            <span class="text-[11px] text-slate-400 mt-1 block">Aktivitas debit dan kredit</span>
         </div>
 
         <!-- Card 3: Saldo Akhir -->
@@ -95,7 +79,6 @@ requireAuth(['akuntan']);
             <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-600 to-blue-600"></div>
             <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Saldo Akhir Berjalan</span>
             <h4 id="box-ending-balance" class="text-2xl font-black text-indigo-900 mt-2 font-mono">Rp 0</h4>
-            <span class="text-[11px] text-slate-400 mt-1 block">Akumulasi riil posisi akun</span>
         </div>
     </div>
 
@@ -214,8 +197,6 @@ requireAuth(['akuntan']);
             const result = await res.json();
             if (!result.success) return;
 
-            // Render chips akun aktif yang bermutasi pada periode ini
-            renderActiveAccountChips(result.active_accounts || [], result.account?.id);
 
             // Jika load awal dan akun terpilih tidak punya mutasi, namun ada akun lain yang aktif, alihkan otomatis
             if (!initialLoadDone) {
@@ -296,35 +277,6 @@ requireAuth(['akuntan']);
         }
     }
 
-    function renderActiveAccountChips(activeAccounts, currentAccId) {
-        const container = document.getElementById('active-accounts-chips');
-        const badgeCount = document.getElementById('active-acc-count');
-        container.innerHTML = '';
-
-        if (!activeAccounts || activeAccounts.length === 0) {
-            container.innerHTML = '<span class="text-xs text-slate-400 italic">Belum ada transaksi pada rentang tanggal ini.</span>';
-            badgeCount.innerText = '0 Akun';
-            return;
-        }
-
-        badgeCount.innerText = `${activeAccounts.length} Akun Aktif`;
-
-        activeAccounts.forEach(acc => {
-            const isSelected = Number(acc.id) === Number(currentAccId);
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.onclick = () => switchLedgerAccount(acc.id);
-            btn.className = isSelected
-                ? 'inline-flex items-center space-x-1.5 px-3 py-1 rounded-xl bg-indigo-600 text-white font-black text-[11px] shadow-xs'
-                : 'inline-flex items-center space-x-1.5 px-3 py-1 rounded-xl bg-white hover:bg-indigo-50 text-slate-700 hover:text-indigo-900 font-bold text-[11px] border border-slate-200/80 transition-colors shadow-xs';
-            
-            btn.innerHTML = `
-                <span>[${acc.code}] ${acc.name}</span>
-                <span class="px-1.5 py-0.2 rounded-full text-[9px] font-mono ${isSelected ? 'bg-indigo-800 text-indigo-100' : 'bg-indigo-100 text-indigo-700'}">${acc.mutation_count}</span>
-            `;
-            container.appendChild(btn);
-        });
-    }
 </script>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
