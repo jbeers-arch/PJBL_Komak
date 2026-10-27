@@ -344,7 +344,7 @@ foreach ($transactions as $trx) {
 
         $db->commit();
         $syncedIds[] = $trxNo;
-    } catch (Exception $e) {
+    } catch (Throwable $e) {
         if ($db->inTransaction()) {
             $db->rollBack();
         }

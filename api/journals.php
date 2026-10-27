@@ -139,7 +139,7 @@ switch ($action) {
             ]);
 
             jsonResponse(['success' => true, 'message' => 'Jurnal umum berhasil disimpan.', 'transaction_no' => $trxNo]);
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             if ($db->inTransaction()) {
                 $db->rollBack();
             }
@@ -228,7 +228,7 @@ switch ($action) {
                 'message' => "Jurnal pembalik ($trxNo) berhasil dibuat untuk membatalkan entri {$orig['transaction_no']}.",
                 'transaction_no' => $trxNo
             ]);
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             if ($db->inTransaction()) {
                 $db->rollBack();
             }
