@@ -518,6 +518,14 @@ SQL;
             if (!in_array('tax_amount', $cols)) $db->exec("ALTER TABLE pos_transactions ADD COLUMN tax_amount REAL DEFAULT 0");
             $invCols = $db->query("PRAGMA table_info(invoice_scans)")->fetchAll(PDO::FETCH_COLUMN, 1);
             if (!in_array('supplier_id', $invCols)) $db->exec("ALTER TABLE invoice_scans ADD COLUMN supplier_id INTEGER");
+
+            // Normalisasi catatan audit log lampau yang tersimpan dalam format UTC server ke WIB (+7 jam)
+            try {
+                $checkUtc = $db->query("SELECT COUNT(*) FROM audit_logs WHERE created_at LIKE '2026-10-27 02:%' OR created_at LIKE '2026-10-27 03:%'")->fetchColumn();
+                if ($checkUtc > 0) {
+                    $db->exec("UPDATE audit_logs SET created_at = datetime(created_at, '+7 hours') WHERE created_at LIKE '2026-10-27 02:%' OR created_at LIKE '2026-10-27 03:%'");
+                }
+            } catch (Exception $e) {}
         } catch (Exception $e) {}
     }
 

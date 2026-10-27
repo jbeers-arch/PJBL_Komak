@@ -8,6 +8,9 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Set zona waktu default ke WIB (Asia/Jakarta, UTC+7)
+date_default_timezone_set('Asia/Jakarta');
+
 define('APP_NAME', 'PJBL Komak - SIA & POS Laundry Multi-Cabang');
 define('APP_VERSION', '1.0.0');
 
@@ -99,7 +102,8 @@ function auditLog($action, $module, $description, $details = null, $userId = nul
             $detailsJson = is_string($details) ? $details : json_encode($details, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         }
 
-        $stmt = $db->prepare("INSERT INTO audit_logs (user_id, user_name, role, action, module, description, details, ip_address, user_agent, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now', 'localtime'))");
+        $nowWib = date('Y-m-d H:i:s');
+        $stmt = $db->prepare("INSERT INTO audit_logs (user_id, user_name, role, action, module, description, details, ip_address, user_agent, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([
             $userId,
             $userName,
@@ -109,7 +113,8 @@ function auditLog($action, $module, $description, $details = null, $userId = nul
             trim($description),
             $detailsJson,
             $ip,
-            $userAgent
+            $userAgent,
+            $nowWib
         ]);
         return true;
     } catch (Exception $e) {

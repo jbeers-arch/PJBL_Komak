@@ -431,11 +431,12 @@ switch ($action) {
             // Simpan record penguncian periode
             $stmtLock = $db->prepare("INSERT INTO period_locks 
                 (period_name, period_start, period_end, closed_at, closed_by, total_revenue, total_expense, net_profit_loss, prive_amount, closing_journal_id, status, notes)
-                VALUES (?, ?, ?, datetime('now'), ?, ?, ?, ?, ?, ?, 'locked', ?)");
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'locked', ?)");
             $stmtLock->execute([
                 $periodName,
                 $periodStart,
                 $periodEnd,
+                date('Y-m-d H:i:s'),
                 $_SESSION['user']['id'],
                 $totalRev,
                 $totalExp,

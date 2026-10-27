@@ -13,6 +13,10 @@ requireAuth(['akuntan']);
             </div>
         </div>
         <div class="flex items-center space-x-2.5">
+            <span class="inline-flex items-center px-3 py-1.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/40 text-emerald-700 dark:text-emerald-400 text-xs font-bold shadow-2xs">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse mr-1.5"></span>
+                Live Sync (WIB)
+            </span>
             <button onclick="exportAuditCsv()" class="inline-flex items-center px-4 py-2.5 rounded-2xl bg-slate-900 dark:bg-white dark:text-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-sm transition-all duration-200">
                 <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                 Unduh CSV
@@ -235,6 +239,17 @@ requireAuth(['akuntan']);
     document.addEventListener('DOMContentLoaded', () => {
         loadStats();
         loadAuditLogs(1);
+
+        // Auto-refresh log audit secara realtime setiap 10 detik
+        setInterval(() => {
+            const modal = document.getElementById('details-modal');
+            const isModalOpen = modal && !modal.classList.contains('hidden');
+            const searchVal = document.getElementById('filter-search')?.value.trim() || '';
+            if (currentPage === 1 && !isModalOpen && searchVal.length === 0) {
+                loadAuditLogs(1, true);
+                loadStats();
+            }
+        }, 10000);
     });
 
     async function loadStats() {
@@ -288,10 +303,12 @@ requireAuth(['akuntan']);
         }
     }
 
-    async function loadAuditLogs(page = 1) {
+    async function loadAuditLogs(page = 1, isSilent = false) {
         currentPage = page;
         const tbody = document.getElementById('audit-table-body');
-        tbody.innerHTML = `<tr><td colspan="7" class="py-12 text-center text-slate-400">Memuat log audit...</td></tr>`;
+        if (!isSilent) {
+            tbody.innerHTML = `<tr><td colspan="7" class="py-12 text-center text-slate-400">Memuat log audit...</td></tr>`;
+        }
 
         const search = document.getElementById('filter-search').value.trim();
         const module = document.getElementById('filter-module').value;
@@ -499,7 +516,25 @@ requireAuth(['akuntan']);
 
     function formatDateTime(str) {
         if (!str) return '-';
-        return str.replace('T', ' ');
+        const cleanStr = str.replace('T', ' ');
+        const parts = cleanStr.split(/[- :]/);
+        if (parts.length >= 6) {
+            const logDate = new Date(parts[0], parts[1] - 1, parts[2], parts[3], parts[4], parts[5]);
+            const now = new Date();
+            const diffSec = Math.floor((now - logDate) / 1000);
+            let rel = '';
+            if (diffSec >= 0 && diffSec < 60) {
+                rel = 'Baru saja';
+            } else if (diffSec >= 60 && diffSec < 3600) {
+                rel = Math.floor(diffSec / 60) + ' mnt lalu';
+            } else if (diffSec >= 3600 && diffSec < 86400) {
+                rel = Math.floor(diffSec / 3600) + ' jam lalu';
+            }
+            if (rel) {
+                return `<div class="font-bold text-slate-800 dark:text-slate-100">${cleanStr}</div><div class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">${rel}</div>`;
+            }
+        }
+        return `<div>${cleanStr}</div>`;
     }
 
     function escapeHtml(text) {
