@@ -165,7 +165,7 @@ $activeBranches = $appDb->query("SELECT id, code, name FROM branches WHERE is_ac
 
                 <div class="flex items-center space-x-2.5 sm:space-x-3 group cursor-pointer shrink-0" onclick="window.location.href='<?= $currentUser['role'] === 'kasir' ? 'pos.php' : 'dashboard.php' ?>'">
                     <!-- Animated Grok Mascot (Komak-Bot) -->
-                    <div class="grok-mascot relative w-8 h-8 sm:w-10 sm:h-10 select-none shrink-0" title="Hai! Saya Komak-Bot (Klik saya!)">
+                    <div class="grok-mascot relative w-8 h-8 sm:w-10 sm:h-10 select-none shrink-0 cursor-pointer" title="Klik saya untuk mulai mencuci! (Komak-Bot 🫧)">
                         <div class="mascot-orb w-full h-full rounded-full bg-gradient-to-tr from-[#000079] via-[#0100b8] to-[#2563eb] relative flex items-center justify-center shadow-md shadow-[#0100b8]/35 group-hover:shadow-lg group-hover:shadow-blue-600/40">
                             <!-- Gloss Specular Highlight -->
                             <div class="absolute top-0.5 sm:top-1 left-1.5 sm:left-2 w-2.5 sm:w-3.5 h-1 sm:h-1.5 bg-white/40 rounded-full blur-[0.4px] -rotate-30 pointer-events-none"></div>

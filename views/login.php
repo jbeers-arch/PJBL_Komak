@@ -156,7 +156,7 @@ if (isset($_SESSION['user'])) {
       <!-- Brand Logo & Title -->
       <div class="flex items-center gap-2.5">
         <!-- Animated Grok Mascot (Header Small) -->
-        <div class="grok-mascot relative w-9 h-9 select-none shrink-0" title="Hai! Saya Komak-Bot (Klik saya!)">
+        <div class="grok-mascot relative w-9 h-9 select-none shrink-0 cursor-pointer" title="Klik saya untuk mulai mencuci! (Komak-Bot 🫧)">
           <div class="mascot-orb w-full h-full rounded-full bg-gradient-to-tr from-[#000079] via-[#0100b8] to-[#2563eb] relative flex items-center justify-center shadow-md shadow-[#0100b8]/35">
             <div class="absolute top-1 left-1.5 w-3 h-1.5 bg-white/40 rounded-full blur-[0.4px] -rotate-30 pointer-events-none"></div>
             <div class="mascot-face flex items-center justify-center space-x-1 transition-transform duration-100 ease-out">
@@ -196,7 +196,7 @@ if (isset($_SESSION['user'])) {
       
       <!-- Brand Header with Main Grok Mascot -->
       <div class="text-center mb-6">
-        <div class="grok-mascot relative w-16 h-16 mx-auto mb-3 cursor-pointer select-none" title="Klik saya! (Komak-Bot)">
+        <div class="grok-mascot relative w-16 h-16 mx-auto mb-3 cursor-pointer select-none" title="Klik saya untuk mulai mencuci! (Komak-Bot 🫧)">
           <div class="mascot-orb w-full h-full rounded-full bg-gradient-to-tr from-[#000079] via-[#0100b8] to-[#2563eb] p-1 relative flex items-center justify-center shadow-xl shadow-blue-800/40 hover:shadow-blue-600/50">
             <!-- Specular shine -->
             <div class="absolute top-2 left-2.5 w-5 h-2.5 bg-white/40 rounded-full blur-[0.6px] -rotate-30 pointer-events-none"></div>
@@ -449,134 +449,8 @@ if (isset($_SESSION['user'])) {
       }
     }
 
-    // ==========================================
-    // GROK LAUNDRY MASCOT CONTROLLER (KOMAK-BOT)
-    // ==========================================
-    function initGrokMascots() {
-      const mascots = document.querySelectorAll('.grok-mascot');
-      if (!mascots.length) return;
-
-      const greetings = [
-        'Halo! Selamat datang di portal! ✨',
-        'Yuk masuk dan mulai kelola cucian! 🫧',
-        'Akuntansi rapi, laundry berkah! 🧺',
-        'Semangat bekerja hari ini! 💫',
-        'Butuh bantuan login? 😊'
-      ];
-
-      mascots.forEach(mascot => {
-        const face = mascot.querySelector('.mascot-face');
-        const eyes = mascot.querySelectorAll('.mascot-eye');
-        const orb = mascot.querySelector('.mascot-orb');
-        const speech = mascot.querySelector('.mascot-speech');
-
-        if (!face || !eyes.length || !orb) return;
-
-        let lastMove = Date.now();
-        let isHappy = false;
-
-        // 1. Kedip-kedip (Blink)
-        function triggerBlink(doubleBlink = false) {
-          if (isHappy) return;
-          eyes.forEach(e => e.classList.add('blink'));
-          setTimeout(() => {
-            eyes.forEach(e => e.classList.remove('blink'));
-            if (doubleBlink) {
-              setTimeout(() => {
-                eyes.forEach(e => e.classList.add('blink'));
-                setTimeout(() => eyes.forEach(e => e.classList.remove('blink')), 110);
-              }, 130);
-            }
-          }, 140);
-        }
-
-        function scheduleNextBlink() {
-          const delay = Math.random() * 3200 + 2400;
-          setTimeout(() => {
-            const isDouble = Math.random() > 0.72;
-            triggerBlink(isDouble);
-            scheduleNextBlink();
-          }, delay);
-        }
-        scheduleNextBlink();
-
-        // 2. Nengok-nengok (Idle Roaming)
-        function idleLookAround() {
-          if (Date.now() - lastMove < 2200 || isHappy) {
-            setTimeout(idleLookAround, 1600);
-            return;
-          }
-
-          const directions = [
-            { x: 0, y: 0, rot: 0 },
-            { x: -3.5, y: 0, rot: -3 },
-            { x: 3.5, y: 0, rot: 3 },
-            { x: -2, y: -2, rot: -2 },
-            { x: 2, y: -1, rot: 2 },
-            { x: 0, y: 0, rot: 0 }
-          ];
-          const target = directions[Math.floor(Math.random() * directions.length)];
-          face.style.transform = `translate(${target.x}px, ${target.y}px)`;
-          orb.style.transform = `rotate(${target.rot}deg)`;
-
-          const nextLook = Math.random() * 2600 + 1600;
-          setTimeout(idleLookAround, nextLook);
-        }
-        setTimeout(idleLookAround, 2000);
-
-        // 3. Ikuti Kursor (Eye Tracking)
-        window.addEventListener('mousemove', (e) => {
-          if (isHappy) return;
-          lastMove = Date.now();
-          const rect = mascot.getBoundingClientRect();
-          const mX = rect.left + rect.width / 2;
-          const mY = rect.top + rect.height / 2;
-
-          const diffX = e.clientX - mX;
-          const diffY = e.clientY - mY;
-          const dist = Math.sqrt(diffX * diffX + diffY * diffY);
-
-          const maxDist = 500;
-          const clampedDist = Math.min(dist, maxDist) / maxDist;
-          const angle = Math.atan2(diffY, diffX);
-
-          const maxOffset = mascot.classList.contains('w-16') ? 5 : 3.5;
-          const offsetX = Math.cos(angle) * (clampedDist * maxOffset);
-          const offsetY = Math.sin(angle) * (clampedDist * (maxOffset * 0.75));
-
-          face.style.transform = `translate(${offsetX.toFixed(1)}px, ${offsetY.toFixed(1)}px)`;
-          const tilt = (offsetX * 0.8).toFixed(1);
-          orb.style.transform = `rotate(${tilt}deg)`;
-        });
-
-        // 4. Interaksi Klik: Mata Senang (^ ^) & Balon Sapaan
-        mascot.addEventListener('click', (ev) => {
-          ev.stopPropagation();
-          isHappy = true;
-          eyes.forEach(e => e.classList.add('happy'));
-          face.style.transform = 'scale(1.15) translateY(-1px)';
-
-          if (speech) {
-            const randomGreet = greetings[Math.floor(Math.random() * greetings.length)];
-            speech.innerText = randomGreet;
-            speech.classList.remove('opacity-0');
-            speech.classList.add('opacity-100');
-          }
-
-          setTimeout(() => {
-            eyes.forEach(e => e.classList.remove('happy'));
-            face.style.transform = 'scale(1) translate(0px, 0px)';
-            isHappy = false;
-            if (speech) {
-              speech.classList.remove('opacity-100');
-              speech.classList.add('opacity-0');
-            }
-          }, 2400);
-        });
-      });
-    }
-
-    document.addEventListener('DOMContentLoaded', initGrokMascots);
   </script>
+  <!-- Komak Mascot (Komak-Bot) Laundry Washing & Physics Animation Engine -->
+  <script src="../assets/js/komak-mascot.js"></script>
 </body>
 </html>

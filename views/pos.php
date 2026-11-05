@@ -1416,6 +1416,11 @@ $userBranchId = $_SESSION['user']['branch_id'] ?? 2; // Default Cabang 1 jika be
             showToast('Transaksi Sukses disimpan di Mode Offline! Akan disinkron otomatis saat online.', 'info');
         }
 
+        // Rayakan transaksi sukses dengan animasi cuci maskot Komak-Bot!
+        if (typeof window.triggerKomakWash === 'function') {
+            window.triggerKomakWash();
+        }
+
         // Buka Struk
         showReceiptModal(trxPayload, wasSyncedDirectly);
 
