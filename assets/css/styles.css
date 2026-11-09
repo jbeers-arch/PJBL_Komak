@@ -27,6 +27,13 @@
   --danger: #e11d48;
   --sidebar-w: 260px;
   --ticker-h: 34px;
+
+  /* Emil Kowalski Craft & Physics Curves */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-tactile: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 html.dark {
@@ -149,15 +156,21 @@ html.dark .sidebar {
   cursor: pointer;
   font-size: 0.86rem;
   font-weight: 500;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 160ms var(--ease-out), background-color 150ms ease, color 150ms ease, border-color 150ms ease;
   position: relative;
   z-index: 1;
 }
 
-.nav-item:hover {
-  color: #0100b8;
-  background: #f1f5f9;
-  transform: translateX(3px);
+@media (hover: hover) and (pointer: fine) {
+  .nav-item:hover {
+    color: #0100b8;
+    background: #f1f5f9;
+    transform: translateX(3px);
+  }
+}
+
+.nav-item:active {
+  transform: scale(0.97);
 }
 
 .nav-item.active {
@@ -171,9 +184,11 @@ html.dark .sidebar {
 html.dark .nav-item {
   color: #94a3b8;
 }
-html.dark .nav-item:hover {
-  color: #f8fafc;
-  background: rgba(255, 255, 255, 0.06);
+@media (hover: hover) and (pointer: fine) {
+  html.dark .nav-item:hover {
+    color: #f8fafc;
+    background: rgba(255, 255, 255, 0.06);
+  }
 }
 html.dark .nav-item.active {
   color: #60a5fa !important;
@@ -330,15 +345,21 @@ html.dark .stat-card:hover {
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: transform 150ms var(--ease-out), background-color 150ms ease, color 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
   color: #475569;
   border: 1px solid #cbd5e1;
   background: #f1f5f9;
 }
 
-.tab-btn:hover {
-  background: #e2e8f0;
-  color: #0f172a;
+@media (hover: hover) and (pointer: fine) {
+  .tab-btn:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+  }
+}
+
+.tab-btn:active {
+  transform: scale(0.97);
 }
 
 .tab-btn.active {
@@ -421,8 +442,16 @@ html.dark label {
 }
 
 /* =========================================================
- * BUTTONS (KSPM ROYAL BLUE GRADIENTS)
+ * BUTTONS (TACTILE MICRO-INTERACTION & ROYAL BLUE)
  * ========================================================= */
+button, .btn, [role="button"], input[type="submit"], input[type="button"] {
+  transition: transform 160ms var(--ease-out), box-shadow 160ms var(--ease-out), background-color 150ms ease, border-color 150ms ease, opacity 150ms ease;
+}
+
+button:active:not(:disabled), .btn:active:not(:disabled), [role="button"]:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
@@ -434,23 +463,25 @@ html.dark label {
   font-size: 0.875rem;
   cursor: pointer;
   border: none;
-  transition: all 0.2s ease;
+  transition: transform 160ms var(--ease-out), box-shadow 160ms var(--ease-out), background-color 150ms ease, border-color 150ms ease;
 }
 
 .btn-primary {
   background: linear-gradient(135deg, #000079 0%, #0100b8 100%) !important;
   color: #ffffff !important;
-  box-shadow: 0 4px 14px rgba(1, 0, 184, 0.25);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05), 0 4px 14px rgba(1, 0, 184, 0.25);
 }
 
-.btn-primary:hover {
-  background: linear-gradient(135deg, #0100b8 0%, #1d4ed8 100%) !important;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(1, 0, 184, 0.35);
+@media (hover: hover) and (pointer: fine) {
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #0100b8 0%, #1d4ed8 100%) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.08), 0 6px 18px rgba(1, 0, 184, 0.35);
+  }
 }
 
 .btn-primary:active {
-  transform: translateY(0);
+  transform: scale(0.97);
 }
 
 .btn-outline {
@@ -582,7 +613,7 @@ html.dark .badge-purple {
   border-radius: 12px;
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  transition: all 0.2s ease;
+  transition: transform 160ms var(--ease-out), border-color 150ms ease, background-color 150ms ease;
 }
 
 .glossary-item:hover {
@@ -612,7 +643,7 @@ html.dark .glossary-item:hover {
   border-radius: 8px;
   cursor: pointer;
   font-size: 0.8rem;
-  transition: all 0.15s;
+  transition: transform 140ms var(--ease-out), background-color 140ms ease, color 140ms ease;
   position: relative;
   color: #cbd5e1;
 }
@@ -645,31 +676,31 @@ html.dark .glossary-item:hover {
 }
 
 /* =========================================================
- * GLOBAL UTILITY OVERRIDES (FORCING DARK THEME)
+ * DARK THEME UTILITY OVERRIDES (SCOPED TO html.dark)
  * ========================================================= */
-.bg-white {
+html.dark .bg-white {
   background-color: #111827 !important;
 }
-.bg-slate-50, .bg-slate-100, .bg-slate-50\/70, .bg-slate-50\/80, .bg-slate-50\/90 {
+html.dark .bg-slate-50, html.dark .bg-slate-100, html.dark .bg-slate-50\/70, html.dark .bg-slate-50\/80, html.dark .bg-slate-50\/90 {
   background-color: #141c2e !important;
 }
-.bg-slate-200 {
+html.dark .bg-slate-200 {
   background-color: rgba(255, 255, 255, 0.1) !important;
 }
-.border-slate-100, .border-slate-200, .border-slate-200\/80, .border-slate-200\/90, .border-slate-300 {
+html.dark .border-slate-100, html.dark .border-slate-200, html.dark .border-slate-200\/80, html.dark .border-slate-200\/90, html.dark .border-slate-300 {
   border-color: rgba(255, 255, 255, 0.08) !important;
 }
-.divide-slate-100, .divide-slate-200 {
+html.dark .divide-slate-100, html.dark .divide-slate-200 {
   border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
-.text-slate-900, .text-slate-800, .text-slate-700 {
+html.dark .text-slate-900, html.dark .text-slate-800, html.dark .text-slate-700 {
   color: #f8fafc !important;
 }
-.text-slate-600 {
+html.dark .text-slate-600 {
   color: #cbd5e1 !important;
 }
-.text-slate-500, .text-slate-400 {
+html.dark .text-slate-500, html.dark .text-slate-400 {
   color: #94a3b8 !important;
 }
 
@@ -850,10 +881,34 @@ tr:hover,
   border-color: rgba(255, 255, 255, 0.25) !important;
 }
 
-/* Modals & Dialogs */
+/* Modals & Dialogs (Emil Kowalski Physics & Centered Origins) */
 .modal-backdrop {
   background-color: rgba(6, 9, 16, 0.75);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.emil-dialog {
+  transform-origin: center !important;
+  transition: transform 200ms var(--ease-out), opacity 200ms var(--ease-out) !important;
+}
+
+.emil-dialog[data-state="closed"],
+.emil-dialog.is-closed {
+  transform: scale(0.96) !important;
+  opacity: 0 !important;
+}
+
+.emil-dialog[data-state="open"],
+.emil-dialog.is-open {
+  transform: scale(1) !important;
+  opacity: 1 !important;
+}
+
+/* Popovers scale from their trigger anchor */
+.emil-popover {
+  transform-origin: var(--transform-origin, top);
+  transition: transform 160ms var(--ease-out), opacity 160ms var(--ease-out);
 }
 
 /* Profit positive/negative */
@@ -864,39 +919,46 @@ tr:hover,
   color: #fb7185 !important;
 }
 
-/* Toast Notification */
+/* Toast Notification (Sonner Principles: Smooth Transitions & Stacked Depth) */
 #toast-container {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
+  bottom: 20px;
+  right: 20px;
   z-index: 9999;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  flex-direction: column-reverse;
+  gap: 8px;
   pointer-events: none;
 }
 
-.toast {
+.toast, .toast-item {
   pointer-events: auto;
-  min-width: 260px;
-  max-width: 380px;
-  background: #0f172a;
-  color: #f8fafc;
-  padding: 12px 18px;
-  border-radius: 12px;
-  font-size: 0.875rem;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+  min-width: 280px;
+  max-width: 400px;
+  border-radius: 14px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.1), 0 12px 28px -4px rgba(0, 0, 0, 0.25);
   display: flex;
   align-items: center;
   gap: 10px;
-  animation: slideInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1), fadeOut 0.3s ease forwards 2.7s;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-left: 4px solid var(--accent);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: transform 200ms var(--ease-out), opacity 180ms var(--ease-out);
+  will-change: transform, opacity;
 }
 
-.toast.success { border-left-color: var(--success); }
-.toast.warn { border-left-color: var(--warn); }
-.toast.danger { border-left-color: var(--danger); }
+.toast[data-entering],
+.toast-item.is-entering {
+  transform: translateY(16px) scale(0.96);
+  opacity: 0;
+}
+
+.toast[data-exiting],
+.toast-item.is-exiting {
+  transform: translateY(8px) scale(0.97);
+  opacity: 0;
+  transition: transform 140ms ease-out, opacity 140ms ease-out;
+}
 
 /* =========================================================
  * FINTECH & TRADING UI ANIMATION SYSTEM
@@ -1021,11 +1083,11 @@ tr:hover,
 
 /* Interactive Timeframe Pill Button */
 .ihsg-tf-btn {
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: transform 160ms var(--ease-out), background-color 150ms ease, color 150ms ease, border-color 150ms ease !important;
 }
 
 .ihsg-tf-btn:active {
-  transform: scale(0.92);
+  transform: scale(0.95);
 }
 
 /* Smooth Range Bar Transition */
@@ -1918,7 +1980,7 @@ html.light .toast {
   user-select: none;
   text-decoration: none;
   white-space: nowrap;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 160ms var(--ease-out), background 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
 }
 
 .glass-pill:hover {
@@ -1995,7 +2057,7 @@ html.light .glass-pill.btn-primary {
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   color: #f8fafc;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 160ms var(--ease-out), background 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
   cursor: pointer;
   user-select: none;
 }

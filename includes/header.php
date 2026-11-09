@@ -118,10 +118,15 @@ $activeBranches = $appDb->query("SELECT id, code, name FROM branches WHERE is_ac
         }
         .mascot-orb {
             animation: mascotFloat 4s ease-in-out infinite;
-            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+            transition: transform 0.2s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.2s ease;
         }
-        .mascot-orb:hover {
-            transform: scale(1.08) translateY(-1px);
+        @media (hover: hover) and (pointer: fine) {
+            .mascot-orb:hover {
+                transform: scale(1.06) translateY(-1px);
+            }
+        }
+        .mascot-orb:active {
+            transform: scale(0.94) translateY(0);
         }
         .mascot-eye {
             background-color: #ffffff !important;
@@ -159,7 +164,7 @@ $activeBranches = $appDb->query("SELECT id, code, name FROM branches WHERE is_ac
             <!-- Brand / Logo & Mobile Menu Toggle -->
             <div class="flex items-center space-x-2 sm:space-x-3 shrink-0 min-w-0">
                 <!-- Mobile Menu Hamburger Button -->
-                <button type="button" onclick="toggleMobileSidebar()" class="md:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors shrink-0" title="Buka Menu">
+                <button type="button" onclick="toggleMobileSidebar()" class="md:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all active:scale-[0.92] shrink-0" title="Buka Menu">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                 </button>
 
@@ -194,7 +199,7 @@ $activeBranches = $appDb->query("SELECT id, code, name FROM branches WHERE is_ac
             <!-- Badges, Theme Toggle & User Status -->
             <div class="flex items-center space-x-1.5 sm:space-x-3 shrink-0">
                 <!-- Theme Toggle Button (Dark / Light Mode) -->
-                <button type="button" onclick="toggleTheme()" id="theme-toggle" class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200/90 dark:border-slate-700 text-slate-700 dark:text-amber-400 transition-all flex items-center justify-center flex-shrink-0 shadow-xs" title="Ganti Mode (Dark / Light)">
+                <button type="button" onclick="toggleTheme()" id="theme-toggle" class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200/90 dark:border-slate-700 text-slate-700 dark:text-amber-400 transition-all active:scale-[0.92] flex items-center justify-center flex-shrink-0 shadow-xs" title="Ganti Mode (Dark / Light)">
                     <i id="theme-icon" class="fa-solid fa-moon text-slate-700 dark:text-amber-400 text-xs sm:text-sm"></i>
                 </button>
 
@@ -252,7 +257,7 @@ $activeBranches = $appDb->query("SELECT id, code, name FROM branches WHERE is_ac
                         <span class="text-xs font-semibold text-slate-700 dark:text-slate-300"><?= htmlspecialchars($currentUser['name']) ?></span>
                     </div>
 
-                    <button onclick="handleLogout()" title="Keluar Akun" class="p-1.5 sm:p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-all duration-200 shrink-0">
+                    <button onclick="handleLogout()" title="Keluar Akun" class="p-1.5 sm:p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-all duration-150 active:scale-[0.92] shrink-0">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
                     </button>
                 </div>

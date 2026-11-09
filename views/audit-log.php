@@ -184,15 +184,15 @@ requireAuth(['akuntan']);
     </div>
 </div>
 
-<!-- Modal Rincian JSON Perubahan -->
-<div id="details-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 dark:border-white/[0.1] space-y-4 max-h-[90vh] flex flex-col">
+<!-- Modal Rincian JSON Perubahan (Emil Kowalski Centered Dialog) -->
+<div id="details-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 transition-opacity duration-180 ease-out">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200/80 dark:border-white/[0.1] space-y-4 max-h-[90vh] flex flex-col transform scale-[0.96] opacity-0 transition-all duration-200" style="transform-origin: center; transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);">
         <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/[0.08]">
             <div>
                 <h4 class="font-extrabold text-sm text-slate-900 dark:text-white" id="modal-title">Rincian Perubahan Data</h4>
                 <p class="text-[11px] text-slate-400" id="modal-subtitle">Snapshot parameter dan payload mutasi</p>
             </div>
-            <button onclick="closeDetailsModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white text-xl font-bold">&times;</button>
+            <button onclick="closeDetailsModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white text-xl font-bold p-1 rounded-lg transition-transform active:scale-[0.9]">&times;</button>
         </div>
 
         <div class="space-y-3 overflow-y-auto pr-1 flex-1 text-xs">
@@ -220,7 +220,7 @@ requireAuth(['akuntan']);
         </div>
 
         <div class="pt-3 border-t border-slate-100 dark:border-white/[0.08] flex justify-end">
-            <button onclick="closeDetailsModal()" class="py-2.5 px-5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.08] dark:hover:bg-white/[0.12] text-slate-700 dark:text-slate-200 text-xs font-bold transition-colors">
+            <button onclick="closeDetailsModal()" class="py-2.5 px-5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.08] dark:hover:bg-white/[0.12] text-slate-700 dark:text-slate-200 text-xs font-bold transition-all active:scale-[0.97]">
                 Tutup
             </button>
         </div>
@@ -461,41 +461,66 @@ requireAuth(['akuntan']);
         }
 
         document.getElementById('modal-json-content').textContent = formattedJson;
-        document.getElementById('details-modal').classList.remove('hidden');
+        const modal = document.getElementById('details-modal');
+        const card = modal.querySelector('div');
+        modal.classList.remove('hidden');
+        requestAnimationFrame(() => {
+            modal.classList.remove('opacity-0');
+            modal.classList.add('opacity-100');
+            if (card) {
+                card.classList.remove('scale-[0.96]', 'opacity-0');
+                card.classList.add('scale-100', 'opacity-100');
+            }
+        });
     }
 
     function closeDetailsModal() {
-        document.getElementById('details-modal').classList.add('hidden');
+        const modal = document.getElementById('details-modal');
+        const card = modal.querySelector('div');
+        modal.classList.remove('opacity-100');
+        modal.classList.add('opacity-0');
+        if (card) {
+            card.classList.remove('scale-100', 'opacity-100');
+            card.classList.add('scale-[0.96]', 'opacity-0');
+        }
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 140);
     }
 
     function getActionBadge(action) {
         action = (action || '').toUpperCase();
+        const base = "inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border tracking-wide";
         if (action === 'LOGIN') {
-            return `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400">LOGIN</span>`;
+            return `<span class="${base} bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/40">LOGIN</span>`;
         } else if (action === 'LOGIN_FAILED') {
-            return `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-500/10 dark:text-rose-400">GAGAL LOGIN</span>`;
+            return `<span class="${base} bg-rose-50 text-rose-700 border-rose-200/80 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800/40">GAGAL LOGIN</span>`;
         } else if (action === 'LOGOUT') {
-            return `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-300">LOGOUT</span>`;
+            return `<span class="${base} bg-slate-100 text-slate-700 border-slate-200/80 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">LOGOUT</span>`;
         } else if (action === 'CREATE') {
-            return `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-bold bg-sky-100 text-sky-800 dark:bg-sky-500/10 dark:text-sky-400">TAMBAH</span>`;
+            return `<span class="${base} bg-sky-50 text-sky-700 border-sky-200/80 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800/40">TAMBAH</span>`;
         } else if (action === 'UPDATE') {
-            return `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-500/10 dark:text-amber-400">UBAH</span>`;
+            return `<span class="${base} bg-amber-50 text-amber-700 border-amber-200/80 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/40">UBAH</span>`;
         } else if (action === 'DELETE') {
-            return `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-500/10 dark:text-rose-400">HAPUS</span>`;
+            return `<span class="${base} bg-rose-50 text-rose-700 border-rose-200/80 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800/40">HAPUS</span>`;
         } else if (action === 'CLOSING_PERIOD') {
-            return `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-500/10 dark:text-purple-400">TUTUP BUKU</span>`;
+            return `<span class="${base} bg-purple-50 text-purple-700 border-purple-200/80 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800/40">TUTUP BUKU</span>`;
         } else if (action === 'REVERSE') {
-            return `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-bold bg-orange-100 text-orange-800 dark:bg-orange-500/10 dark:text-orange-400">PEMBALIK</span>`;
+            return `<span class="${base} bg-orange-50 text-orange-700 border-orange-200/80 dark:bg-orange-950/40 dark:text-orange-300 dark:border-orange-800/40">PEMBALIK</span>`;
         } else if (action === 'STOCK_ADJUST') {
-            return `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-bold bg-teal-100 text-teal-800 dark:bg-teal-500/10 dark:text-teal-400">ADJUST STOK</span>`;
+            return `<span class="${base} bg-teal-50 text-teal-700 border-teal-200/80 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-800/40">ADJUST STOK</span>`;
         } else if (action === 'POS_SYNC') {
-            return `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-500/10 dark:text-indigo-400">POS SYNC</span>`;
+            return `<span class="${base} bg-indigo-50 text-indigo-700 border-indigo-200/80 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-800/40">POS SYNC</span>`;
         } else if (action === 'OPEN_SHIFT') {
-            return `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-bold bg-cyan-100 text-cyan-800 dark:bg-cyan-500/10 dark:text-cyan-400">BUKA SHIFT</span>`;
+            return `<span class="${base} bg-cyan-50 text-cyan-700 border-cyan-200/80 dark:bg-cyan-950/40 dark:text-cyan-300 dark:border-cyan-800/40">BUKA SHIFT</span>`;
         } else if (action === 'CLOSE_SHIFT') {
-            return `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-bold bg-violet-100 text-violet-800 dark:bg-violet-500/10 dark:text-violet-400">TUTUP SHIFT</span>`;
+            return `<span class="${base} bg-violet-50 text-violet-700 border-violet-200/80 dark:bg-violet-950/40 dark:text-violet-300 dark:border-violet-800/40">TUTUP SHIFT</span>`;
+        } else if (action === 'APPROVE') {
+            return `<span class="${base} bg-blue-50 text-blue-700 border-blue-200/80 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800/40">APPROVE</span>`;
+        } else if (action === 'SWITCH_BRANCH') {
+            return `<span class="${base} bg-slate-100 text-slate-800 border-slate-200/90 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700">SWITCH_BRANCH</span>`;
         }
-        return `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-800 dark:bg-white/[0.08] dark:text-slate-300">${action}</span>`;
+        return `<span class="${base} bg-slate-100 text-slate-700 border-slate-200/80 dark:bg-white/[0.08] dark:text-slate-300">${action}</span>`;
     }
 
     function getRoleBadge(role) {

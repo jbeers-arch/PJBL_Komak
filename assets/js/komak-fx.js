@@ -3,7 +3,7 @@
  */
 (() => {
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const SP = 'cubic-bezier(.34,1.56,.64,1)', OUT = 'cubic-bezier(.2,.8,.2,1)';
+  const SP = 'cubic-bezier(.34,1.56,.64,1)', OUT = 'cubic-bezier(.23,1,.32,1)';
   const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const el = (t, c, h) => { const e = document.createElement(t); if (c) e.className = c; if (h != null) e.innerHTML = h; return e; };
   const NOOP = { finished: Promise.resolve(), cancel() {} };
@@ -109,7 +109,7 @@ html.dark .kfx-dot{background:#27324a;color:#cbd5e1}
       try {
         await send(items[i], i);
         ic.innerHTML = CHECK; rows[i].classList.add('ok'); ok++;
-        A(ic, [{ scale: 0 }, { scale: 1.3 }, { scale: 1 }], { duration: 350, easing: SP });
+        A(ic, [{ transform: 'scale(0.92)', opacity: 0 }, { transform: 'scale(1.12)', opacity: 1, offset: 0.6 }, { transform: 'scale(1)', opacity: 1 }], { duration: 240, easing: SP });
       } catch (e) { ic.textContent = '!'; rows[i].classList.add('err'); shake(rows[i]); }
     }
     return ok;
@@ -237,7 +237,7 @@ html.dark .kfx-dot{background:#27324a;color:#cbd5e1}
     const o = window.switchOperatingBranch;
     if (typeof o === 'function') window.switchOperatingBranch = id => {
       sessionStorage.setItem('kfx-branch', '1');
-      const a = A($('main'), [{ opacity: 1, transform: 'none' }, { opacity: .25, transform: 'translateX(-24px)' }], { duration: 260, fill: 'forwards', easing: 'ease-in' });
+      const a = A($('main'), [{ opacity: 1, transform: 'none' }, { opacity: .25, transform: 'translateX(-24px)' }], { duration: 220, fill: 'forwards', easing: OUT });
       setTimeout(() => a.cancel(), 1500);   // jaga-jaga bila ganti cabang gagal dan halaman tidak dimuat ulang
       return o(id);
     };

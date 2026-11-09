@@ -1,12 +1,12 @@
         </main>
     </div>
 
-    <!-- Toast Notification Container -->
-    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2.5 pointer-events-none max-w-sm w-full"></div>
+    <!-- Toast Notification Container (Sonner-Style Bottom-Right Anchor) -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col-reverse space-y-reverse space-y-2.5 pointer-events-none max-w-sm w-full"></div>
 
-    <!-- Global Custom Confirmation Modal (Modern Dialog) -->
-    <div id="global-confirm-modal" class="hidden fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200">
-        <div id="global-confirm-card" class="bg-white dark:bg-[#11182c] rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200/80 dark:border-white/10 text-center relative overflow-hidden transform transition-all duration-200 scale-95 opacity-0">
+    <!-- Global Custom Confirmation Modal (Emil Kowalski Centered Dialog) -->
+    <div id="global-confirm-modal" class="hidden fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 opacity-0 transition-opacity duration-180 ease-out">
+        <div id="global-confirm-card" class="bg-white dark:bg-[#11182c] rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200/80 dark:border-white/10 text-center relative overflow-hidden transform scale-[0.96] opacity-0 transition-all duration-200" style="transform-origin: center; transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);">
             <!-- Top Gradient Bar -->
             <div id="global-confirm-bar" class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 to-red-600"></div>
 
@@ -19,12 +19,12 @@
             <h4 id="global-confirm-title" class="text-base font-extrabold text-slate-900 dark:text-white tracking-tight mb-1.5">Konfirmasi Tindakan</h4>
             <div id="global-confirm-message" class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-5">Apakah Anda yakin ingin melanjutkan tindakan ini?</div>
 
-            <!-- Action Buttons -->
+            <!-- Action Buttons with Tactile Touch Feedback -->
             <div class="space-y-2">
-                <button type="button" id="global-confirm-btn-ok" class="w-full py-2.5 px-4 rounded-2xl text-white text-xs font-bold shadow-sm transition-all transform hover:-translate-y-0.5">
+                <button type="button" id="global-confirm-btn-ok" class="w-full py-2.5 px-4 rounded-2xl text-white text-xs font-bold shadow-sm transition-all transform active:scale-[0.97]">
                     Lanjutkan
                 </button>
-                <button type="button" id="global-confirm-btn-cancel" class="w-full py-2 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors">
+                <button type="button" id="global-confirm-btn-cancel" class="w-full py-2 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-all active:scale-[0.97]">
                     Batal
                 </button>
             </div>
@@ -79,18 +79,22 @@
                     bar.className = 'absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-blue-600';
                     iconBox.className = 'w-12 h-12 mx-auto mb-3.5 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xl shadow-xs';
                     iconBox.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
-                    btnOk.className = 'w-full py-2.5 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm shadow-indigo-600/20 transition-all transform hover:-translate-y-0.5';
+                    btnOk.className = 'w-full py-2.5 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm shadow-indigo-600/20 transition-all transform active:scale-[0.97]';
                 }
 
                 modal.classList.remove('hidden');
                 requestAnimationFrame(() => {
-                    card.classList.remove('scale-95', 'opacity-0');
+                    modal.classList.remove('opacity-0');
+                    modal.classList.add('opacity-100');
+                    card.classList.remove('scale-[0.96]', 'opacity-0');
                     card.classList.add('scale-100', 'opacity-100');
                 });
 
                 function cleanup(value) {
+                    modal.classList.remove('opacity-100');
+                    modal.classList.add('opacity-0');
                     card.classList.remove('scale-100', 'opacity-100');
-                    card.classList.add('scale-95', 'opacity-0');
+                    card.classList.add('scale-[0.96]', 'opacity-0');
                     setTimeout(() => {
                         modal.classList.add('hidden');
                         btnOk.onclick = null;
@@ -98,7 +102,7 @@
                         modal.onclick = null;
                         document.removeEventListener('keydown', handleKey);
                         resolve(value);
-                    }, 150);
+                    }, 140);
                 }
 
                 function handleKey(e) {
@@ -185,25 +189,43 @@
                 </span>`;
             }
 
-            toast.className = `pointer-events-auto px-4 py-3 rounded-2xl border shadow-xl backdrop-blur-md flex items-center space-x-3 text-xs font-semibold transition-all duration-300 transform translate-y-3 opacity-0 ${styleClass}`;
+            toast.className = `pointer-events-auto px-4 py-3 rounded-2xl border shadow-xl backdrop-blur-md flex items-center space-x-3 text-xs font-semibold transform translate-y-4 scale-[0.96] opacity-0 ${styleClass}`;
+            toast.style.transition = 'transform 200ms cubic-bezier(0.23, 1, 0.32, 1), opacity 180ms cubic-bezier(0.23, 1, 0.32, 1)';
             toast.innerHTML = `
                 ${iconSvg}
                 <div class="flex-1 text-slate-100 leading-snug">${message}</div>
-                <button onclick="this.closest('.toast-item')?.remove() || this.parentElement.remove()" class="text-slate-400 hover:text-white p-1 rounded-lg transition-colors">
+                <button onclick="this.closest('.toast-item')?.dismiss?.() || this.parentElement.remove()" class="text-slate-400 hover:text-white p-1 rounded-lg transition-transform active:scale-[0.9]">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             `;
             toast.classList.add('toast-item');
 
+            let dismissTimer = null;
+            const startDismissTimer = (ms = 3500) => {
+                clearTimeout(dismissTimer);
+                dismissTimer = setTimeout(dismiss, ms);
+            };
+
+            const dismiss = () => {
+                clearTimeout(dismissTimer);
+                toast.style.transition = 'transform 140ms ease-out, opacity 140ms ease-out';
+                toast.classList.remove('translate-y-0', 'scale-100', 'opacity-100');
+                toast.classList.add('translate-y-2', 'scale-[0.97]', 'opacity-0');
+                setTimeout(() => toast.remove(), 150);
+            };
+            toast.dismiss = dismiss;
+
+            // Sonner Edge Case: Pause timer saat kursor pengguna berada di atas toast
+            toast.addEventListener('mouseenter', () => clearTimeout(dismissTimer));
+            toast.addEventListener('mouseleave', () => startDismissTimer(1800));
+
             container.appendChild(toast);
             requestAnimationFrame(() => {
-                toast.classList.remove('translate-y-3', 'opacity-0');
+                toast.classList.remove('translate-y-4', 'scale-[0.96]', 'opacity-0');
+                toast.classList.add('translate-y-0', 'scale-100', 'opacity-100');
             });
 
-            setTimeout(() => {
-                toast.classList.add('translate-y-3', 'opacity-0');
-                setTimeout(() => toast.remove(), 300);
-            }, 4000);
+            startDismissTimer(3500);
         }
 
         async function handleLogout() {

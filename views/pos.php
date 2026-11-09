@@ -112,7 +112,7 @@ $userBranchId = $_SESSION['user']['branch_id'] ?? 2; // Default Cabang 1 jika be
   outline-offset: -2px;
   transform: scale(1.012);
   box-shadow: 0 20px 35px -10px rgba(5, 150, 105, 0.25) !important;
-  transition: all 0.25s var(--spring);
+  transition: transform 200ms var(--ease-out), box-shadow 200ms ease, outline 150ms ease;
 }
 
 /* 6. Thermal Receipt Paper with Serrated Edge & Animated Printing */
