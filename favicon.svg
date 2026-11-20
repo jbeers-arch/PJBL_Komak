@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="orbGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#000079"/>
+      <stop offset="52%" stop-color="#0100b8"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+    <radialGradient id="bubbleGrad" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#a5f3fc"/>
+      <stop offset="55%" stop-color="#22d3ee"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </radialGradient>
+    <filter id="orbShadow" x="-15%" y="-15%" width="130%" height="135%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2.2" flood-color="#0100b8" flood-opacity="0.38"/>
+    </filter>
+  </defs>
+
+  <!-- Main Mascot Blue Orb -->
+  <circle cx="30" cy="34" r="26" fill="url(#orbGrad)" filter="url(#orbShadow)"/>
+
+  <!-- Top-Left Gloss Specular Highlight -->
+  <rect x="14" y="13" width="16" height="6.5" rx="3.25" transform="rotate(-24 22 16.25)" fill="#ffffff" fill-opacity="0.38"/>
+
+  <!-- Mascot White Pill Eyes -->
+  <rect x="19.5" y="25" width="7.6" height="17.5" rx="3.8" fill="#ffffff"/>
+  <rect x="32.9" y="25" width="7.6" height="17.5" rx="3.8" fill="#ffffff"/>
+
+  <!-- Top-Right Cyan Soap Bubble Accent -->
+  <circle cx="51" cy="13" r="7" fill="url(#bubbleGrad)" stroke="#ffffff" stroke-width="2"/>
+  <circle cx="49" cy="10.8" r="1.8" fill="#ffffff" fill-opacity="0.9"/>
+</svg>
