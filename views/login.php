@@ -8,9 +8,18 @@
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../config/database.php';
 
-// Inisialisasi DB jika belum
-$loginDb = Database::getConnection();
-$loginBranches = $loginDb->query("SELECT id, code, name FROM branches WHERE is_active = 1 ORDER BY id ASC")->fetchAll(PDO::FETCH_ASSOC);
+// Inisialisasi DB dengan fallback aman agar halaman login tidak pernah gagal dimuat
+$loginBranches = [];
+try {
+    $loginDb = Database::getConnection();
+    $loginBranches = $loginDb->query("SELECT id, code, name FROM branches WHERE is_active = 1 ORDER BY id ASC")->fetchAll(PDO::FETCH_ASSOC);
+} catch (Throwable $e) {
+    $loginBranches = [
+        ['id' => 1, 'code' => 'CBG-01', 'name' => 'Cabang 1 - Pusat (Surabaya Gubeng)'],
+        ['id' => 2, 'code' => 'CBG-02', 'name' => 'Cabang 2 - Timur (Surabaya Rungkut)'],
+        ['id' => 3, 'code' => 'CBG-03', 'name' => 'Cabang 3 - Barat (Surabaya Citraland)']
+    ];
+}
 
 if (isset($_SESSION['user'])) {
     if ($_SESSION['user']['role'] === 'kasir') {

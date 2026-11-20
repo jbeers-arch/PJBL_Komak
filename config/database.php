@@ -8,6 +8,7 @@ require_once __DIR__ . '/config.php';
 
 class Database {
     private static ?PDO $instance = null;
+    private const SCHEMA_VERSION = 4;
 
     public static function getConnection(): PDO {
         if (self::$instance === null) {
@@ -24,14 +25,30 @@ class Database {
             self::$instance->exec('PRAGMA foreign_keys = ON;');
             self::$instance->exec('PRAGMA busy_timeout = 5000;');
             try {
-                self::$instance->exec('PRAGMA journal_mode = WAL;');
+                // Gunakan DELETE mode (bukan WAL) agar aman di shared hosting / NFS (mencegah 502 Bad Gateway akibat mmap -shm)
+                self::$instance->exec('PRAGMA journal_mode = DELETE;');
+                self::$instance->exec('PRAGMA synchronous = NORMAL;');
+                self::$instance->exec('PRAGMA temp_store = MEMORY;');
             } catch (Exception $e) {}
 
             if ($isNewDb) {
                 self::initSchema(self::$instance);
                 self::seedInitialData(self::$instance);
+                try {
+                    self::$instance->exec('PRAGMA user_version = ' . self::SCHEMA_VERSION . ';');
+                } catch (Exception $e) {}
             } else {
-                self::ensureMigrations(self::$instance);
+                $currentVersion = 0;
+                try {
+                    $currentVersion = (int)self::$instance->query('PRAGMA user_version;')->fetchColumn();
+                } catch (Exception $e) {}
+
+                if ($currentVersion < self::SCHEMA_VERSION) {
+                    self::ensureMigrations(self::$instance);
+                    try {
+                        self::$instance->exec('PRAGMA user_version = ' . self::SCHEMA_VERSION . ';');
+                    } catch (Exception $e) {}
+                }
             }
         }
         return self::$instance;
