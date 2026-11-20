@@ -1,31 +1,60 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
   <defs>
-    <linearGradient id="orbGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#000079"/>
-      <stop offset="52%" stop-color="#0100b8"/>
-      <stop offset="100%" stop-color="#2563eb"/>
+    <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e2e8f0"/>
     </linearGradient>
-    <radialGradient id="bubbleGrad" cx="35%" cy="30%" r="70%">
-      <stop offset="0%" stop-color="#a5f3fc"/>
-      <stop offset="55%" stop-color="#22d3ee"/>
+    <linearGradient id="panelGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#000079"/>
+      <stop offset="100%" stop-color="#0100b8"/>
+    </linearGradient>
+    <linearGradient id="drumRim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0100b8"/>
+      <stop offset="100%" stop-color="#000079"/>
+    </linearGradient>
+    <linearGradient id="waterGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
       <stop offset="100%" stop-color="#0284c7"/>
-    </radialGradient>
-    <filter id="orbShadow" x="-15%" y="-15%" width="130%" height="135%">
-      <feDropShadow dx="0" dy="2" stdDeviation="2.2" flood-color="#0100b8" flood-opacity="0.38"/>
-    </filter>
+    </linearGradient>
+    <clipPath id="drumClip">
+      <circle cx="32" cy="39" r="14.5"/>
+    </clipPath>
   </defs>
 
-  <!-- Main Mascot Blue Orb -->
-  <circle cx="30" cy="34" r="26" fill="url(#orbGrad)" filter="url(#orbShadow)"/>
+  <!-- Washer Main Cabinet Body -->
+  <rect x="6" y="4" width="52" height="56" rx="12" fill="url(#bodyGrad)" stroke="#0100b8" stroke-width="2.5"/>
 
-  <!-- Top-Left Gloss Specular Highlight -->
-  <rect x="14" y="13" width="16" height="6.5" rx="3.25" transform="rotate(-24 22 16.25)" fill="#ffffff" fill-opacity="0.38"/>
+  <!-- Top Control Panel Header -->
+  <path d="M8 15 H56 V19 H8 Z" fill="#cbd5e1"/>
+  <path d="M7.2 16 C7.2 9.5 11.5 5.2 18 5.2 H46 C52.5 5.2 56.8 9.5 56.8 16 V17.5 H7.2 Z" fill="url(#panelGrad)"/>
 
-  <!-- Mascot White Pill Eyes -->
-  <rect x="19.5" y="25" width="7.6" height="17.5" rx="3.8" fill="#ffffff"/>
-  <rect x="32.9" y="25" width="7.6" height="17.5" rx="3.8" fill="#ffffff"/>
+  <!-- Control Panel Drawer Line & Rotary Knob + LEDs -->
+  <rect x="12" y="9.5" width="10" height="3.5" rx="1.75" fill="#93c5fd" fill-opacity="0.45"/>
+  <circle cx="32" cy="11.2" r="3.4" fill="#ffffff"/>
+  <circle cx="32" cy="11.2" r="1.4" fill="#0100b8"/>
+  <circle cx="44" cy="11.2" r="2.1" fill="#22d3ee"/>
+  <circle cx="50" cy="11.2" r="2.1" fill="#4ade80"/>
 
-  <!-- Top-Right Cyan Soap Bubble Accent -->
-  <circle cx="51" cy="13" r="7" fill="url(#bubbleGrad)" stroke="#ffffff" stroke-width="2"/>
-  <circle cx="49" cy="10.8" r="1.8" fill="#ffffff" fill-opacity="0.9"/>
+  <!-- Front-Load Circular Door Outer Rim -->
+  <circle cx="32" cy="39" r="18.5" fill="url(#drumRim)"/>
+  <circle cx="32" cy="39" r="14.5" fill="#082f49"/>
+
+  <!-- Swirling Water & Soap Bubbles Inside Drum -->
+  <g clip-path="url(#drumClip)">
+    <!-- Back Water Wave -->
+    <path d="M14 37 Q23 31 32 37 T50 37 V56 H14 Z" fill="#0284c7" opacity="0.65"/>
+    <!-- Front Cyan Water Wave -->
+    <path d="M14 40 Q23 45 32 39 T50 39 V56 H14 Z" fill="url(#waterGrad)"/>
+    <!-- White Soap Foam Bubbles Inside Drum -->
+    <circle cx="24" cy="45" r="2.4" fill="#ffffff" fill-opacity="0.9"/>
+    <circle cx="35" cy="47" r="1.8" fill="#ffffff" fill-opacity="0.85"/>
+    <circle cx="39" cy="34" r="2.2" fill="#a5f3fc" fill-opacity="0.9"/>
+    <circle cx="25" cy="31" r="1.6" fill="#ffffff" fill-opacity="0.75"/>
+    <!-- Glass Specular Highlight -->
+    <ellipse cx="26" cy="29" rx="6" ry="2.5" transform="rotate(-28 26 29)" fill="#ffffff" fill-opacity="0.35"/>
+  </g>
+
+  <!-- Inner White Ring Highlight & Door Handle Latch -->
+  <circle cx="32" cy="39" r="14.5" fill="none" stroke="#38bdf8" stroke-width="1.2" stroke-opacity="0.7"/>
+  <rect x="47.2" y="35.5" width="3.2" height="7" rx="1.6" fill="#ffffff"/>
 </svg>

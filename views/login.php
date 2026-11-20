@@ -28,11 +28,11 @@ if (isset($_SESSION['user'])) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Masuk / Login - <?= APP_NAME ?></title>
 
-  <!-- Komak-Bot Mascot Favicons -->
-  <link rel="icon" type="image/svg+xml" href="<?= BASE_URL ?>/favicon.svg?v=3.0" />
-  <link rel="alternate icon" type="image/png" href="<?= BASE_URL ?>/favicon.png?v=3.0" />
-  <link rel="shortcut icon" href="<?= BASE_URL ?>/favicon.ico?v=3.0" />
-  <link rel="apple-touch-icon" href="<?= BASE_URL ?>/apple-touch-icon.png?v=3.0" />
+  <!-- Komak Washing Machine Favicons -->
+  <link rel="icon" type="image/svg+xml" href="<?= BASE_URL ?>/favicon.svg?v=4.0" />
+  <link rel="alternate icon" type="image/png" href="<?= BASE_URL ?>/favicon.png?v=4.0" />
+  <link rel="shortcut icon" href="<?= BASE_URL ?>/favicon.ico?v=4.0" />
+  <link rel="apple-touch-icon" href="<?= BASE_URL ?>/apple-touch-icon.png?v=4.0" />
 
   <!-- Immediate Theme Initializer (No Flash of Unstyled Theme) -->
   <script>
