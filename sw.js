@@ -1,15 +1,15 @@
 /**
- * PJBL Komak - Offline-First Service Worker (PWA)
- * Memungkinkan halaman Kasir POS & aset utama tetap bisa dibuka dan dipakai saat internet mati.
+ * PJBL Komak - Offline-First Service Worker (PWA v2)
+ * Menyimpan halaman Kasir POS, aset lokal, dan CDN agar web tetap bisa dibuka penuh saat offline.
  */
 
-const CACHE_NAME = 'pjbl-komak-offline-v1';
+const CACHE_NAME = 'pjbl-komak-offline-v2';
 
 const CORE_ASSETS = [
     './manifest.json',
-    './favicon.svg?v=4.0',
-    './favicon.png?v=4.0',
-    './apple-touch-icon.png?v=4.0',
+    './favicon.svg',
+    './favicon.png',
+    './apple-touch-icon.png',
     './assets/css/styles.css',
     './assets/js/pos-offline.js',
     './assets/js/komak-fx.js',
@@ -18,7 +18,6 @@ const CORE_ASSETS = [
     './assets/js/komak-motion.js'
 ];
 
-// CDN eksternal yang dicache saat online agar tampilan CSS/ikon tetap utuh saat offline
 const CACHEABLE_CDN_HOSTS = [
     'cdn.tailwindcss.com',
     'cdnjs.cloudflare.com',
@@ -30,13 +29,11 @@ const CACHEABLE_CDN_HOSTS = [
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME).then(async (cache) => {
-            for (const asset of CORE_ASSETS) {
-                try {
-                    await cache.add(asset);
-                } catch (e) {
-                    // Abaikan aset opsional jika gagal di-precache
-                }
-            }
+            await Promise.all(
+                CORE_ASSETS.map((asset) =>
+                    cache.add(asset).catch(() => {})
+                )
+            );
         }).then(() => self.skipWaiting())
     );
 });
@@ -53,25 +50,6 @@ self.addEventListener('activate', (event) => {
     );
 });
 
-// Terima pesan dari halaman untuk segera menyimpan halaman aktif ke cache
-self.addEventListener('message', (event) => {
-    if (event.data && event.data.type === 'CACHE_CURRENT_PAGE' && event.data.url) {
-        event.waitUntil(
-            caches.open(CACHE_NAME).then(async (cache) => {
-                try {
-                    const res = await fetch(event.data.url, { credentials: 'include' });
-                    if (res && res.ok && !res.redirected) {
-                        await cache.put(event.data.url, res.clone());
-                        const cleanUrl = new URL(event.data.url);
-                        cleanUrl.search = '';
-                        await cache.put(cleanUrl.toString(), res.clone());
-                    }
-                } catch (e) {}
-            })
-        );
-    }
-});
-
 self.addEventListener('fetch', (event) => {
     const req = event.request;
     if (req.method !== 'GET') return;
@@ -82,19 +60,19 @@ self.addEventListener('fetch', (event) => {
 
     if (!isSameOrigin && !isAllowedCdn) return;
 
-    // 1. Navigasi halaman HTML/PHP (Network-First, fallback ke Cache saat Offline)
+    // 1. Navigasi halaman HTML/PHP (Network-First + Fallback ke Cache saat Offline)
     if (req.mode === 'navigate' || (isSameOrigin && url.pathname.endsWith('.php') && !url.pathname.includes('/api/'))) {
         event.respondWith(handlePageNavigation(req));
         return;
     }
 
-    // 2. API GET (Network-First, fallback ke Cache JSON terakhir saat Offline)
+    // 2. API GET (Network-First + Fallback ke Cache JSON terakhir saat Offline)
     if (isSameOrigin && url.pathname.includes('/api/')) {
         event.respondWith(handleApiGet(req));
         return;
     }
 
-    // 3. Aset statis lokal & CDN (Cache-First / Stale-While-Revalidate)
+    // 3. Aset statis lokal & CDN (Cache-First + Update di background)
     event.respondWith(handleStaticAsset(req));
 });
 
@@ -104,27 +82,31 @@ async function handlePageNavigation(req) {
     cleanUrl.search = '';
 
     try {
-        const networkRes = await fetch(req);
-        // Jangan cache halaman redirect login jika sesi habis; hanya cache halaman yang benar-benar dimuat
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 6000);
+        const networkRes = await fetch(req, { signal: controller.signal });
+        clearTimeout(timer);
         if (networkRes && networkRes.ok && !networkRes.redirected) {
-            cache.put(req, networkRes.clone()).catch(() => {});
+            cache.put(req.url, networkRes.clone()).catch(() => {});
             cache.put(cleanUrl.toString(), networkRes.clone()).catch(() => {});
         }
         return networkRes;
     } catch (err) {
-        // Offline: cari halaman persis di cache
-        const exactMatch = await cache.match(req);
+        // Offline: cari di Cache Storage
+        const exactMatch = await cache.match(req.url);
         if (exactMatch) return exactMatch;
 
         const pathMatch = await cache.match(cleanUrl.toString());
         if (pathMatch) return pathMatch;
 
-        // Fallback otomatis ke Kasir POS yang sudah ter-cache
+        const ignoreSearchMatch = await cache.match(req, { ignoreSearch: true });
+        if (ignoreSearchMatch) return ignoreSearchMatch;
+
+        // Fallback ke halaman Kasir POS yang tersimpan di cache
         const posUrl = new URL('./views/pos.php', self.registration.scope).toString();
-        const posMatch = await cache.match(posUrl);
+        const posMatch = await cache.match(posUrl, { ignoreSearch: true });
         if (posMatch) return posMatch;
 
-        // Jika belum pernah membuka halaman saat online
         return new Response(
             `<!DOCTYPE html>
 <html lang="id">
@@ -148,7 +130,7 @@ async function handlePageNavigation(req) {
   <div class="card">
     <div class="badge">MODE OFFLINE</div>
     <h1>Halaman Belum Tersimpan di Cache</h1>
-    <p>Koneksi internet sedang terputus dan halaman ini belum pernah dibuka saat online. Buka halaman <strong>Kasir POS</strong> minimal sekali saat online agar selalu siap dipakai tanpa internet.</p>
+    <p>Koneksi internet sedang mati dan halaman ini belum tersimpan di cache browser. Buka halaman <strong>Kasir POS</strong> sekali saat online hingga muncul tanda <strong>Siap Offline</strong>.</p>
     <div class="btns">
       <a class="primary" href="./views/pos.php">Buka Kasir POS</a>
       <button class="secondary" onclick="location.reload()">Coba Lagi</button>
@@ -166,11 +148,11 @@ async function handleApiGet(req) {
     try {
         const networkRes = await fetch(req);
         if (networkRes && networkRes.ok) {
-            cache.put(req, networkRes.clone()).catch(() => {});
+            cache.put(req.url, networkRes.clone()).catch(() => {});
         }
         return networkRes;
     } catch (err) {
-        const cached = await cache.match(req);
+        const cached = await cache.match(req, { ignoreSearch: false }) || await cache.match(req, { ignoreSearch: true });
         if (cached) return cached;
         return new Response(
             JSON.stringify({ success: false, offline: true, message: 'Sedang offline, menggunakan data lokal.' }),
@@ -181,12 +163,12 @@ async function handleApiGet(req) {
 
 async function handleStaticAsset(req) {
     const cache = await caches.open(CACHE_NAME);
-    const cached = await cache.match(req, { ignoreSearch: false });
+    const cached = await cache.match(req.url) || await cache.match(req, { ignoreSearch: true });
 
     const fetchPromise = fetch(req)
         .then((networkRes) => {
             if (networkRes && (networkRes.ok || networkRes.type === 'opaque')) {
-                cache.put(req, networkRes.clone()).catch(() => {});
+                cache.put(req.url, networkRes.clone()).catch(() => {});
             }
             return networkRes;
         })
@@ -198,12 +180,6 @@ async function handleStaticAsset(req) {
 
     const networkRes = await fetchPromise;
     if (networkRes) return networkRes;
-
-    // Fallback tanpa query string untuk aset lokal seperti styles.css?v=...
-    const cleanUrl = new URL(req.url);
-    cleanUrl.search = '';
-    const cleanCached = await cache.match(cleanUrl.toString());
-    if (cleanCached) return cleanCached;
 
     return new Response('', { status: 504 });
 }

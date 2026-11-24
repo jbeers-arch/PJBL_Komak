@@ -32,7 +32,7 @@
     </div>
 
     <!-- Scripts -->
-    <script src="../assets/js/pos-offline.js"></script>
+    <script src="../assets/js/pos-offline.js?v=<?= file_exists(__DIR__ . '/../assets/js/pos-offline.js') ? filemtime(__DIR__ . '/../assets/js/pos-offline.js') : time() ?>"></script>
     <script>
         // Global Modern Confirmation Modal Function
         function showConfirmDialog({

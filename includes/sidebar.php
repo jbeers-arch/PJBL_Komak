@@ -144,6 +144,10 @@ $branchName = $_SESSION['user']['branch_name'] ?? 'Pusat';
                 </label>
             </div>
             <p class="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">Uji kasir laundry saat internet padam. Data nota tersimpan di browser &amp; sinkron otomatis saat online.</p>
+            <div id="pwa-offline-ready-badge" class="mt-2 pt-2 border-t border-slate-200/70 dark:border-white/[0.06] flex items-center justify-between text-[10px] font-semibold text-slate-400">
+                <span>Cache Offline:</span>
+                <span id="pwa-offline-ready-text" class="text-slate-500">Memeriksa...</span>
+            </div>
         </div>
     </div>
 </aside>

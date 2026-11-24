@@ -28,28 +28,96 @@ class PosOfflineEngine {
     }
 
     registerServiceWorker() {
-        if (!('serviceWorker' in navigator)) return;
-        window.addEventListener('load', async () => {
+        const badgeText = document.getElementById('pwa-offline-ready-text');
+        const setStatus = (text, cls) => {
+            if (!badgeText) return;
+            badgeText.innerText = text;
+            badgeText.className = cls;
+        };
+
+        if (!('serviceWorker' in navigator)) {
+            setStatus('Browser tidak mendukung', 'text-amber-600');
+            return;
+        }
+
+        const isSecure = window.isSecureContext || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+        if (!isSecure) {
+            setStatus('Wajib buka via HTTPS', 'text-rose-600 font-bold');
+            return;
+        }
+
+        const runSetup = async () => {
             try {
-                const reg = await navigator.serviceWorker.register('../sw.js', { scope: '../' });
-                // Begitu Service Worker aktif, simpan halaman saat ini ke cache agar langsung siap dibuka saat offline
-                const notifyCache = (sw) => {
-                    if (sw && navigator.onLine) {
-                        sw.postMessage({ type: 'CACHE_CURRENT_PAGE', url: window.location.href });
+                const swUrl = new URL('../sw.js', window.location.href).href;
+                const scopeUrl = new URL('../', window.location.href).href;
+                const reg = await navigator.serviceWorker.register(swUrl, { scope: scopeUrl });
+                reg.update().catch(() => {});
+
+                // Langsung simpan halaman aktif, Kasir POS, serta aset CDN ke Cache Storage dari konteks halaman
+                if ('caches' in window && navigator.onLine) {
+                    const cache = await caches.open('pjbl-komak-offline-v2');
+
+                    // 1. Simpan HTML bersih halaman aktif ke Cache Storage
+                    const cleanCurrentUrl = window.location.href.split('?')[0];
+                    let pageCached = false;
+                    try {
+                        const freshRes = await fetch(window.location.href, { credentials: 'include' });
+                        if (freshRes && freshRes.ok && !freshRes.redirected) {
+                            await cache.put(window.location.href, freshRes.clone());
+                            await cache.put(cleanCurrentUrl, freshRes.clone());
+                            pageCached = true;
+                        }
+                    } catch (e) {}
+
+                    if (!pageCached) {
+                        const htmlDoc = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+                        const pageRes = new Response(htmlDoc, {
+                            status: 200,
+                            headers: { 'Content-Type': 'text/html; charset=utf-8' }
+                        });
+                        await cache.put(window.location.href, pageRes.clone()).catch(() => {});
+                        await cache.put(cleanCurrentUrl, pageRes.clone()).catch(() => {});
                     }
-                };
-                if (navigator.serviceWorker.controller) {
-                    notifyCache(navigator.serviceWorker.controller);
-                } else if (reg.active) {
-                    notifyCache(reg.active);
+
+                    // 2. Pastikan views/pos.php juga selalu ter-cache meski sedang membuka dashboard/menu lain
+                    const posUrl = new URL('../views/pos.php', window.location.href).href;
+                    if (!cleanCurrentUrl.endsWith('/views/pos.php')) {
+                        fetch(posUrl, { credentials: 'include' })
+                            .then((r) => {
+                                if (r && r.ok && !r.redirected) {
+                                    cache.put(posUrl, r.clone()).catch(() => {});
+                                }
+                            })
+                            .catch(() => {});
+                    }
+
+                    // 3. Simpan Tailwind & FontAwesome CDN agar tampilan tidak rusak saat offline
+                    const cdnUrls = [
+                        'https://cdn.tailwindcss.com?plugins=forms,container-queries',
+                        'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css'
+                    ];
+                    cdnUrls.forEach((u) => {
+                        fetch(u, { mode: 'no-cors' })
+                            .then((r) => {
+                                if (r) cache.put(u, r.clone()).catch(() => {});
+                            })
+                            .catch(() => {});
+                    });
                 }
-                navigator.serviceWorker.ready.then((readyReg) => {
-                    notifyCache(readyReg.active);
-                });
+
+                await navigator.serviceWorker.ready;
+                setStatus('Siap Offline ✓', 'text-emerald-600 dark:text-emerald-400 font-bold');
             } catch (err) {
                 console.warn('Gagal mendaftarkan Service Worker offline:', err);
+                setStatus('Gagal aktif', 'text-rose-500 font-bold');
             }
-        });
+        };
+
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            runSetup();
+        } else {
+            document.addEventListener('DOMContentLoaded', runSetup, { once: true });
+        }
     }
 
     openDatabase() {
