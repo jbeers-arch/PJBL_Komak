@@ -31,11 +31,13 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title><?= htmlspecialchars($pageTitle) ?> - <?= APP_NAME ?></title>
 
-    <!-- Komak Washing Machine Favicons -->
+    <!-- Komak Washing Machine Favicons & PWA Manifest -->
     <link rel="icon" type="image/svg+xml" href="<?= BASE_URL ?>/favicon.svg?v=4.0">
     <link rel="alternate icon" type="image/png" href="<?= BASE_URL ?>/favicon.png?v=4.0">
     <link rel="shortcut icon" href="<?= BASE_URL ?>/favicon.ico?v=4.0">
     <link rel="apple-touch-icon" href="<?= BASE_URL ?>/apple-touch-icon.png?v=4.0">
+    <link rel="manifest" href="<?= BASE_URL ?>/manifest.json">
+    <meta name="theme-color" content="#000079">
     
     <!-- Immediate Theme Initializer (No Flash of Unstyled Theme) -->
     <script>

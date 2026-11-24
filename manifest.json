@@ -1,0 +1,23 @@
+{
+  "name": "PJBL Komak - SIA & POS Laundry Multi-Cabang",
+  "short_name": "PJBL Komak",
+  "description": "Sistem Informasi Akuntansi & Kasir POS Laundry Multi-Cabang (Offline-First)",
+  "start_url": "./views/pos.php",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f8f9fe",
+  "theme_color": "#000079",
+  "icons": [
+    {
+      "src": "./favicon.png?v=4.0",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
+      "src": "./apple-touch-icon.png?v=4.0",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

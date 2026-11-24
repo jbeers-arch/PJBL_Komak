@@ -14,6 +14,7 @@ class PosOfflineEngine {
     }
 
     async init() {
+        this.registerServiceWorker();
         await this.openDatabase();
         this.setupNetworkListeners();
         this.updateNetworkBadge();
@@ -24,6 +25,31 @@ class PosOfflineEngine {
                 this.syncPendingTransactions();
             }
         }, 15000);
+    }
+
+    registerServiceWorker() {
+        if (!('serviceWorker' in navigator)) return;
+        window.addEventListener('load', async () => {
+            try {
+                const reg = await navigator.serviceWorker.register('../sw.js', { scope: '../' });
+                // Begitu Service Worker aktif, simpan halaman saat ini ke cache agar langsung siap dibuka saat offline
+                const notifyCache = (sw) => {
+                    if (sw && navigator.onLine) {
+                        sw.postMessage({ type: 'CACHE_CURRENT_PAGE', url: window.location.href });
+                    }
+                };
+                if (navigator.serviceWorker.controller) {
+                    notifyCache(navigator.serviceWorker.controller);
+                } else if (reg.active) {
+                    notifyCache(reg.active);
+                }
+                navigator.serviceWorker.ready.then((readyReg) => {
+                    notifyCache(readyReg.active);
+                });
+            } catch (err) {
+                console.warn('Gagal mendaftarkan Service Worker offline:', err);
+            }
+        });
     }
 
     openDatabase() {
