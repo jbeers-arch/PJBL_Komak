@@ -6,7 +6,7 @@ requireAuth(['akuntan']);
 
 <div class="space-y-6">
     <!-- Header Page -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-slate-200/80">
+    <div class="no-print flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-slate-200/80">
         <div>
             <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Laporan Keuangan Terpadu</h2>
         </div>
@@ -23,7 +23,7 @@ requireAuth(['akuntan']);
     </div>
 
     <!-- Segmented Tab Selector (Pills) -->
-    <div class="bg-slate-200/60 dark:bg-white/[0.06] p-1.5 rounded-2xl flex items-center space-x-1.5 overflow-x-auto max-w-full no-scrollbar touch-scroll">
+    <div class="no-print segmented-tabs bg-slate-200/60 dark:bg-white/[0.06] p-1.5 rounded-2xl flex items-center space-x-1.5 overflow-x-auto max-w-full no-scrollbar touch-scroll">
         <button onclick="switchTab('income')" id="tab-btn-income" class="shrink-0 py-2 px-3.5 rounded-xl font-bold text-xs bg-white text-indigo-700 shadow-xs transition-all whitespace-nowrap text-center">
             Laba Rugi
         </button>
@@ -54,7 +54,7 @@ requireAuth(['akuntan']);
     </div>
 
     <!-- Filter Bar -->
-    <div class="bg-white dark:bg-[#11182c] p-4 rounded-3xl border border-slate-200/80 dark:border-white/10 shadow-xs flex flex-col md:flex-row md:items-end justify-between gap-3">
+    <div class="no-print bg-white dark:bg-[#11182c] p-4 rounded-3xl border border-slate-200/80 dark:border-white/10 shadow-xs flex flex-col md:flex-row md:items-end justify-between gap-3">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-center gap-3 w-full md:w-auto">
             <div id="filter-date-range" class="grid grid-cols-2 gap-2 sm:col-span-2 lg:flex lg:items-center">
                 <div class="w-full">
@@ -1357,19 +1357,44 @@ requireAuth(['akuntan']);
 </script>
 
 <style>
+@page {
+    size: A4 portrait;
+    margin: 14mm;
+}
 @media print {
-    #main-sidebar, header, .segmented-tabs, #top-nav, button, select, input[type="date"], label {
+    html, body {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        height: auto !important;
+        overflow: visible !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    #main-sidebar, header, .no-print, .segmented-tabs, #top-nav, button, select, input[type="date"], #toast-container {
         display: none !important;
     }
-    body {
-        background: white !important;
-        color: black !important;
+    [id^="tab-content-"] {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        background: #ffffff !important;
+        color: #0f172a !important;
+    }
+    [id^="tab-content-"].hidden {
+        display: none !important;
     }
     .shadow-xs, .shadow-md, .shadow-2xl {
         box-shadow: none !important;
     }
     .border {
         border-color: #cbd5e1 !important;
+    }
+    tr, .avoid-break {
+        break-inside: avoid;
+        page-break-inside: avoid;
     }
 }
 </style>

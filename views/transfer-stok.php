@@ -1,5 +1,5 @@
 <?php
-$pageTitle = 'Transfer Keperluan Cuci Antar-Cabang';
+$pageTitle = 'Stok dan Transfer Persediaan';
 require_once __DIR__ . '/../includes/header.php';
 requireAuth(['akuntan']);
 ?>
@@ -10,15 +10,15 @@ requireAuth(['akuntan']);
         <div>
             <div class="flex items-center space-x-2">
                 <span class="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center text-sm font-bold">
-                    <i class="fa-solid fa-truck-ramp-box"></i>
+                    <i class="fa-solid fa-boxes-stacked"></i>
                 </span>
-                <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Transfer Keperluan Cuci</h2>
+                <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Stok dan Transfer Persediaan</h2>
             </div>
         </div>
         <div class="flex items-center space-x-2">
             <button onclick="openTransferModal()" class="inline-flex items-center px-4 py-2.5 rounded-2xl bg-gradient-to-r from-blue-700 to-indigo-600 hover:from-blue-600 hover:to-indigo-500 text-white text-xs font-bold shadow-md shadow-blue-500/20 transition-all duration-200 transform hover:-translate-y-0.5 cursor-pointer">
                 <i class="fa-solid fa-plus mr-1.5"></i>
-                Kirim Keperluan Cuci Baru
+                Transfer Persediaan Baru
             </button>
         </div>
     </div>
@@ -29,20 +29,20 @@ requireAuth(['akuntan']);
             <i class="fa-solid fa-soap"></i>
         </span>
         <div class="text-xs text-blue-900 dark:text-blue-300">
-            <span class="font-bold block text-sm mb-0.5">Fasilitas Khusus Bahan &amp; Perlengkapan Operasional</span>
-            Fitur transfer ini khusus mengelola mutasi barang operasional laundry seperti sabun cair, deterjen, softener, pewangi parfum, pemutih, serta kemasan plastik. Setiap pengiriman otomatis memotong stok di cabang asal dan menambah stok di cabang penerima dengan audit log lengkap.
+            <span class="font-bold block text-sm mb-0.5">Pengelolaan Stok &amp; Mutasi Persediaan Operasional</span>
+            Kelola jumlah stok bahan operasional laundry (sabun cair, deterjen, softener, pewangi parfum, kemasan plastik) di setiap cabang secara real-time, perbarui stok persediaan kapan saja melalui tombol Edit Stok, dan lakukan pengiriman antar cabang dengan pencatatan audit log lengkap.
         </div>
     </div>
 
-    <!-- SECTION 1: Ringkasan Stok Bahan di Seluruh Cabang -->
+    <!-- SECTION 1: Ringkasan Stok Persediaan di Seluruh Cabang -->
     <div class="bg-white dark:bg-[#11182c] rounded-3xl border border-slate-200/80 dark:border-white/10 p-5 shadow-xs">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 pb-3 border-b border-slate-100 dark:border-white/5">
             <div>
                 <h3 class="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
                     <i class="fa-solid fa-boxes-stacked text-blue-600 text-xs"></i>
-                    Status Stok Bahan &amp; Sabun per Cabang
+                    Status Stok Persediaan per Cabang
                 </h3>
-                <p class="text-[11px] text-slate-400 mt-0.5">Pantau ketersediaan keperluan cuci di Gudang Pusat vs Cabang Outlet</p>
+                <p class="text-[11px] text-slate-400 mt-0.5">Pantau, perbarui stok, dan kirim persediaan antara Gudang Pusat dan Cabang Outlet</p>
             </div>
             <button onclick="loadConsumablesSummary()" class="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer">
                 <i class="fa-solid fa-arrows-rotate text-xs"></i>
@@ -51,10 +51,10 @@ requireAuth(['akuntan']);
         </div>
 
         <div class="overflow-x-auto no-scrollbar touch-scroll">
-            <table class="w-full text-left text-xs min-w-[620px]">
+            <table class="w-full text-left text-xs min-w-[660px]">
                 <thead>
                     <tr class="border-b border-slate-200 dark:border-white/10 text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 bg-slate-50/70 dark:bg-white/[0.02]">
-                        <th class="py-3 px-4">Nama Keperluan Cuci</th>
+                        <th class="py-3 px-4">Nama Persediaan</th>
                         <?php foreach ($activeBranches as $b): ?>
                             <th class="py-3 px-4 text-center"><?= htmlspecialchars($b['name']) ?></th>
                         <?php endforeach; ?>
@@ -189,6 +189,58 @@ requireAuth(['akuntan']);
     </div>
 </div>
 
+<!-- MODAL: Edit Stok Persediaan per Cabang -->
+<div id="edit-stock-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-[#11182c] rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 my-8 border border-slate-200 dark:border-white/10">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/10">
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </div>
+                <div>
+                    <h4 class="font-extrabold text-sm text-slate-900 dark:text-white">Edit Stok Persediaan</h4>
+                    <p id="edit-stock-subtitle" class="text-[11px] text-slate-400">Perbarui jumlah stok terbaru di masing-masing cabang</p>
+                </div>
+            </div>
+            <button type="button" onclick="closeEditStockModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-2xl font-bold leading-none cursor-pointer">&times;</button>
+        </div>
+
+        <form id="edit-stock-form" onsubmit="submitEditStock(event)" class="space-y-4">
+            <input type="hidden" id="edit-stock-product-id" value="">
+
+            <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-white/10 flex items-center justify-between">
+                <div>
+                    <div id="edit-stock-product-name" class="text-xs font-extrabold text-slate-900 dark:text-white">-</div>
+                    <div id="edit-stock-product-meta" class="text-[11px] text-slate-400 font-mono mt-0.5">-</div>
+                </div>
+                <div class="text-right">
+                    <div class="text-[10px] uppercase font-bold text-slate-400">Total Baru</div>
+                    <div id="edit-stock-live-total" class="text-sm font-black font-mono text-indigo-600 dark:text-indigo-400">0</div>
+                </div>
+            </div>
+
+            <div id="edit-stock-branches-container" class="space-y-2.5">
+                <!-- Dynamic branch stock inputs -->
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Catatan / Alasan Pembaruan</label>
+                <input type="text" id="edit-stock-reason" placeholder="Contoh: Restok pembelian baru / Hasil stok opname" class="w-full p-2.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:ring-2 focus:ring-emerald-500">
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-white/10">
+                <button type="button" onclick="closeEditStockModal()" class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                    Batal
+                </button>
+                <button type="submit" id="btn-save-edit-stock" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-500/20 transition-all cursor-pointer flex items-center gap-1.5">
+                    <i class="fa-solid fa-check text-xs"></i>
+                    <span>Simpan Perubahan Stok</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- MODAL: Surat Jalan / Bukti Transfer Cetak -->
 <div id="surat-jalan-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white dark:bg-[#11182c] rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 border border-slate-200 dark:border-white/10">
@@ -213,6 +265,7 @@ requireAuth(['akuntan']);
 
 <script>
 let consumablesList = [];
+let summaryBranches = [];
 let sourceStocks = {};
 let allTransfers = [];
 
@@ -230,6 +283,7 @@ async function loadConsumablesSummary() {
         if (!data.success) throw new Error(data.message);
 
         consumablesList = data.summary;
+        summaryBranches = data.branches || [];
         renderConsumablesSummary(data.summary, data.branches);
     } catch (e) {
         tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-rose-500 font-bold">Gagal memuat ringkasan stok bahan: ${e.message}</td></tr>`;
@@ -292,9 +346,15 @@ function renderConsumablesSummary(summary, branches) {
                 ${statusBadge}
             </td>
             <td class="py-3 px-4 text-right">
-                <button onclick="quickTransferItem(${item.product_id})" class="px-2.5 py-1 rounded-xl bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 text-blue-700 dark:text-blue-400 text-[11px] font-bold transition-colors cursor-pointer">
-                    Kirim &rarr;
-                </button>
+                <div class="inline-flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openEditStockModal(${item.product_id})" class="px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 text-[11px] font-bold transition-colors cursor-pointer inline-flex items-center gap-1" title="Edit Stok Persediaan">
+                        <i class="fa-solid fa-pen text-[9px]"></i>
+                        <span>Edit Stok</span>
+                    </button>
+                    <button type="button" onclick="quickTransferItem(${item.product_id})" class="px-2.5 py-1 rounded-xl bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 text-blue-700 dark:text-blue-400 text-[11px] font-bold transition-colors cursor-pointer">
+                        Kirim &rarr;
+                    </button>
+                </div>
             </td>
         `;
         tbody.appendChild(tr);
@@ -489,6 +549,111 @@ async function quickTransferItem(productId) {
     const container = document.getElementById('transfer-items-container');
     container.innerHTML = '';
     addTransferItemRow(productId);
+}
+
+function openEditStockModal(productId) {
+    const item = consumablesList.find(p => Number(p.product_id) === Number(productId));
+    if (!item) {
+        showToast('Data persediaan tidak ditemukan.', 'error');
+        return;
+    }
+
+    const activeBranchList = (summaryBranches && summaryBranches.length > 0) ? summaryBranches : (window.APP_BRANCHES || []);
+
+    document.getElementById('edit-stock-product-id').value = item.product_id;
+    document.getElementById('edit-stock-product-name').innerText = item.name;
+    document.getElementById('edit-stock-product-meta').innerText = `${item.code} • Kemasan: ${item.unit}`;
+    document.getElementById('edit-stock-reason').value = '';
+
+    const container = document.getElementById('edit-stock-branches-container');
+    container.innerHTML = '';
+
+    activeBranchList.forEach(b => {
+        const currentStk = item.branch_stocks && item.branch_stocks[b.id] ? Number(item.branch_stocks[b.id].stock) : 0;
+        const row = document.createElement('div');
+        row.className = 'flex items-center justify-between gap-3 p-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/70';
+        row.innerHTML = `
+            <div class="min-w-0">
+                <div class="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">${b.name}</div>
+                <div class="text-[10px] text-slate-400">Stok saat ini: <span class="font-mono font-bold text-slate-600 dark:text-slate-300">${currentStk} ${item.unit}</span></div>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+                <button type="button" onclick="stepEditStockInput(this, -1)" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 font-bold text-xs cursor-pointer">-</button>
+                <input type="number" min="0" value="${currentStk}" data-branch-id="${b.id}" oninput="recalcEditStockTotal('${item.unit}')" class="w-20 p-1.5 text-xs text-center font-mono font-bold rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 edit-stock-branch-input" required>
+                <button type="button" onclick="stepEditStockInput(this, 1)" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 font-bold text-xs cursor-pointer">+</button>
+                <span class="text-[10px] text-slate-400 font-mono w-10">${item.unit}</span>
+            </div>
+        `;
+        container.appendChild(row);
+    });
+
+    recalcEditStockTotal(item.unit);
+    document.getElementById('edit-stock-modal').classList.remove('hidden');
+}
+
+function stepEditStockInput(btn, delta) {
+    const input = btn.parentElement.querySelector('.edit-stock-branch-input');
+    if (!input) return;
+    const nextVal = Math.max(0, (Number(input.value) || 0) + delta);
+    input.value = nextVal;
+    input.dispatchEvent(new Event('input'));
+}
+
+function recalcEditStockTotal(unitLabel = '') {
+    let total = 0;
+    document.querySelectorAll('.edit-stock-branch-input').forEach(inp => {
+        total += Math.max(0, Number(inp.value) || 0);
+    });
+    const el = document.getElementById('edit-stock-live-total');
+    if (el) el.innerText = `${total} ${unitLabel}`.trim();
+}
+
+function closeEditStockModal() {
+    document.getElementById('edit-stock-modal').classList.add('hidden');
+}
+
+async function submitEditStock(e) {
+    e.preventDefault();
+    const productId = Number(document.getElementById('edit-stock-product-id').value);
+    const reason = (document.getElementById('edit-stock-reason').value || '').trim() || 'Pembaruan Stok Persediaan';
+
+    const stocks = [];
+    document.querySelectorAll('.edit-stock-branch-input').forEach(inp => {
+        stocks.push({
+            branch_id: Number(inp.dataset.branchId),
+            stock: Math.max(0, Number(inp.value) || 0)
+        });
+    });
+
+    const btn = document.getElementById('btn-save-edit-stock');
+    const originalHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin text-xs"></i><span>Menyimpan...</span>';
+
+    try {
+        const res = await fetch('../api/transfers.php?action=update_stock', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                product_id: productId,
+                reason: reason,
+                stocks: stocks
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast(data.message || 'Stok persediaan berhasil diperbarui.', 'success');
+            closeEditStockModal();
+            await loadConsumablesSummary();
+        } else {
+            showToast(data.message || 'Gagal memperbarui stok persediaan.', 'error');
+        }
+    } catch (err) {
+        showToast('Terjadi kesalahan jaringan saat menyimpan stok.', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+    }
 }
 
 async function submitStockTransfer(e) {

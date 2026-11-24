@@ -122,9 +122,27 @@ try {
             font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
         @media print {
-            body * { visibility: hidden; }
-            #receipt-print-area, #receipt-print-area * { visibility: visible; }
-            #receipt-print-area { position: absolute; left: 0; top: 0; width: 80mm; }
+            html, body {
+                height: auto !important;
+                min-height: 0 !important;
+                max-width: none !important;
+                width: 100% !important;
+                overflow: visible !important;
+                background: #ffffff !important;
+                color: #0f172a !important;
+            }
+            header, #main-sidebar, #mobile-sidebar-backdrop, .no-print {
+                display: none !important;
+            }
+            #app-shell-container, main {
+                display: block !important;
+                height: auto !important;
+                overflow: visible !important;
+                max-width: 100% !important;
+                width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
         }
         /* Grok Laundry Mascot (Komak-Bot) Animations */
         @keyframes mascotFloat {
@@ -280,6 +298,6 @@ try {
         </div>
     </header>
 
-    <div class="flex flex-1 min-h-0 relative w-full max-w-full overflow-hidden">
+    <div id="app-shell-container" class="flex flex-1 min-h-0 relative w-full max-w-full overflow-hidden">
         <?php include_once __DIR__ . '/sidebar.php'; ?>
         <main class="flex-1 min-w-0 h-full p-4 sm:p-6 lg:p-8 pb-14 sm:pb-20 overflow-y-auto max-w-7xl mx-auto w-full">

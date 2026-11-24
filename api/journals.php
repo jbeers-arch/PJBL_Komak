@@ -10,7 +10,19 @@ require_once __DIR__ . '/../config/database.php';
 requireAuth(['akuntan']);
 
 $db = Database::getConnection();
-$action = $_GET['action'] ?? $_POST['action'] ?? 'list';
+
+// Mendukung baik payload JSON (application/json) maupun FormData ($_POST)
+$rawBody = file_get_contents('php://input');
+$jsonBody = [];
+if ($rawBody !== '' && $rawBody !== false) {
+    $decoded = json_decode($rawBody, true);
+    if (is_array($decoded)) {
+        $jsonBody = $decoded;
+    }
+}
+$input = array_merge($jsonBody, $_POST);
+
+$action = $_GET['action'] ?? ($input['action'] ?? 'list');
 
 switch ($action) {
     case 'list':
@@ -74,20 +86,41 @@ switch ($action) {
         break;
 
     case 'create':
-        $branchId = (int)($_POST['branch_id'] ?? 1);
-        $date = trim($_POST['date'] ?? date('Y-m-d'));
-        $description = trim($_POST['description'] ?? '');
-        $items = json_decode($_POST['items'] ?? '[]', true);
+        $branchId = (int)($input['branch_id'] ?? 1);
+        $date = trim($input['date'] ?? date('Y-m-d'));
+        $description = trim($input['description'] ?? '');
+        $rawItems = $input['items'] ?? [];
+        $items = is_string($rawItems) ? json_decode($rawItems, true) : $rawItems;
 
-        if (empty($description) || empty($items) || count($items) < 2) {
+        if (!is_array($items)) {
+            $items = [];
+        }
+
+        // Filter baris valid yang memiliki akun & nominal debit/kredit > 0
+        $validItems = [];
+        foreach ($items as $item) {
+            $accId = (int)($item['account_id'] ?? 0);
+            $debit = (float)($item['debit'] ?? 0);
+            $credit = (float)($item['credit'] ?? 0);
+            if ($accId > 0 && ($debit > 0 || $credit > 0)) {
+                $validItems[] = [
+                    'account_id' => $accId,
+                    'debit' => $debit,
+                    'credit' => $credit,
+                    'memo' => trim($item['memo'] ?? '')
+                ];
+            }
+        }
+
+        if (empty($description) || count($validItems) < 2) {
             jsonResponse(['success' => false, 'message' => 'Deskripsi dan minimal 2 baris akun (Debit & Kredit) wajib diisi.'], 400);
         }
 
         $totalDebit = 0;
         $totalCredit = 0;
-        foreach ($items as $item) {
-            $totalDebit += (float)($item['debit'] ?? 0);
-            $totalCredit += (float)($item['credit'] ?? 0);
+        foreach ($validItems as $item) {
+            $totalDebit += $item['debit'];
+            $totalCredit += $item['credit'];
         }
 
         if (abs($totalDebit - $totalCredit) >= 0.01 || $totalDebit <= 0) {
@@ -108,7 +141,7 @@ switch ($action) {
         try {
             $db->beginTransaction();
 
-            $refType = trim($_POST['ref_type'] ?? 'manual');
+            $refType = trim($input['ref_type'] ?? 'manual');
             if (!in_array($refType, ['manual', 'adjustment', 'pos', 'invoice_scan'])) {
                 $refType = 'manual';
             }
@@ -120,12 +153,8 @@ switch ($action) {
             $journalId = $db->lastInsertId();
 
             $stmtItem = $db->prepare("INSERT INTO journal_items (journal_entry_id, account_id, debit, credit, memo) VALUES (?, ?, ?, ?, ?)");
-            foreach ($items as $item) {
-                $accId = (int)$item['account_id'];
-                $debit = (float)($item['debit'] ?? 0);
-                $credit = (float)($item['credit'] ?? 0);
-                $memo = trim($item['memo'] ?? '');
-                $stmtItem->execute([$journalId, $accId, $debit, $credit, $memo]);
+            foreach ($validItems as $item) {
+                $stmtItem->execute([$journalId, $item['account_id'], $item['debit'], $item['credit'], $item['memo']]);
             }
 
             $db->commit();
@@ -135,7 +164,7 @@ switch ($action) {
                 'date' => $date,
                 'ref_type' => $refType,
                 'total' => $totalDebit,
-                'items_count' => count($items)
+                'items_count' => count($validItems)
             ]);
 
             jsonResponse(['success' => true, 'message' => 'Jurnal umum berhasil disimpan.', 'transaction_no' => $trxNo]);
@@ -144,6 +173,170 @@ switch ($action) {
                 $db->rollBack();
             }
             jsonResponse(['success' => false, 'message' => 'Gagal menyimpan jurnal: ' . $e->getMessage()], 500);
+        }
+        break;
+
+    case 'update':
+        $journalId = (int)($input['id'] ?? $input['journal_id'] ?? 0);
+        $branchId = (int)($input['branch_id'] ?? 1);
+        $date = trim($input['date'] ?? date('Y-m-d'));
+        $description = trim($input['description'] ?? '');
+        $rawItems = $input['items'] ?? [];
+        $items = is_string($rawItems) ? json_decode($rawItems, true) : $rawItems;
+
+        if ($journalId <= 0) {
+            jsonResponse(['success' => false, 'message' => 'ID Jurnal tidak valid.'], 400);
+        }
+
+        $stmtOrig = $db->prepare("SELECT * FROM journal_entries WHERE id = ?");
+        $stmtOrig->execute([$journalId]);
+        $orig = $stmtOrig->fetch();
+        if (!$orig) {
+            jsonResponse(['success' => false, 'message' => 'Entri jurnal tidak ditemukan.'], 404);
+        }
+
+        if ($orig['ref_type'] === 'closing') {
+            jsonResponse(['success' => false, 'message' => 'Jurnal Tutup Buku (Closing) tidak dapat diedit langsung.'], 403);
+        }
+
+        if (!is_array($items)) {
+            $items = [];
+        }
+
+        $validItems = [];
+        foreach ($items as $item) {
+            $accId = (int)($item['account_id'] ?? 0);
+            $debit = (float)($item['debit'] ?? 0);
+            $credit = (float)($item['credit'] ?? 0);
+            if ($accId > 0 && ($debit > 0 || $credit > 0)) {
+                $validItems[] = [
+                    'account_id' => $accId,
+                    'debit' => $debit,
+                    'credit' => $credit,
+                    'memo' => trim($item['memo'] ?? '')
+                ];
+            }
+        }
+
+        if (empty($description) || count($validItems) < 2) {
+            jsonResponse(['success' => false, 'message' => 'Deskripsi dan minimal 2 baris akun (Debit & Kredit) wajib diisi.'], 400);
+        }
+
+        $totalDebit = 0;
+        $totalCredit = 0;
+        foreach ($validItems as $item) {
+            $totalDebit += $item['debit'];
+            $totalCredit += $item['credit'];
+        }
+
+        if (abs($totalDebit - $totalCredit) >= 0.01 || $totalDebit <= 0) {
+            jsonResponse(['success' => false, 'message' => 'Total Debit (' . number_format($totalDebit) . ') dan Kredit (' . number_format($totalCredit) . ') tidak seimbang (Balance Error).'], 400);
+        }
+
+        // Cek periode lock untuk tanggal lama maupun tanggal baru
+        $stmtLockCheck = $db->prepare("SELECT period_name, period_end FROM period_locks WHERE ? <= period_end AND status = 'locked' ORDER BY period_end DESC LIMIT 1");
+        foreach ([$orig['date'], $date] as $checkDate) {
+            $stmtLockCheck->execute([$checkDate]);
+            $lockHit = $stmtLockCheck->fetch();
+            if ($lockHit) {
+                jsonResponse([
+                    'success' => false,
+                    'message' => "Tanggal jurnal ($checkDate) berada pada periode terkunci ('{$lockHit['period_name']}')."
+                ], 403);
+            }
+        }
+
+        try {
+            $db->beginTransaction();
+
+            $stmtUpd = $db->prepare("UPDATE journal_entries SET branch_id = ?, date = ?, description = ? WHERE id = ?");
+            $stmtUpd->execute([$branchId, $date, $description, $journalId]);
+
+            $stmtDelItems = $db->prepare("DELETE FROM journal_items WHERE journal_entry_id = ?");
+            $stmtDelItems->execute([$journalId]);
+
+            $stmtInsItem = $db->prepare("INSERT INTO journal_items (journal_entry_id, account_id, debit, credit, memo) VALUES (?, ?, ?, ?, ?)");
+            foreach ($validItems as $item) {
+                $stmtInsItem->execute([$journalId, $item['account_id'], $item['debit'], $item['credit'], $item['memo']]);
+            }
+
+            $db->commit();
+
+            auditLog('UPDATE', 'Jurnal Umum', "Memperbarui jurnal #{$orig['transaction_no']}: $description (Total: Rp " . number_format($totalDebit, 0, ',', '.') . ")", [
+                'transaction_no' => $orig['transaction_no'],
+                'old_date' => $orig['date'],
+                'new_date' => $date,
+                'old_description' => $orig['description'],
+                'new_description' => $description,
+                'total' => $totalDebit,
+                'items_count' => count($validItems)
+            ]);
+
+            jsonResponse(['success' => true, 'message' => "Jurnal {$orig['transaction_no']} berhasil diperbarui."]);
+        } catch (Throwable $e) {
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+            jsonResponse(['success' => false, 'message' => 'Gagal memperbarui jurnal: ' . $e->getMessage()], 500);
+        }
+        break;
+
+    case 'delete':
+        $journalId = (int)($input['id'] ?? $input['journal_id'] ?? 0);
+        if ($journalId <= 0) {
+            jsonResponse(['success' => false, 'message' => 'ID Jurnal tidak valid.'], 400);
+        }
+
+        $stmtOrig = $db->prepare("SELECT * FROM journal_entries WHERE id = ?");
+        $stmtOrig->execute([$journalId]);
+        $orig = $stmtOrig->fetch();
+        if (!$orig) {
+            jsonResponse(['success' => false, 'message' => 'Entri jurnal tidak ditemukan.'], 404);
+        }
+
+        // Cek apakah dipakai oleh period_locks (closing journal)
+        $stmtLockRef = $db->prepare("SELECT period_name FROM period_locks WHERE closing_journal_id = ? LIMIT 1");
+        $stmtLockRef->execute([$journalId]);
+        $lockRef = $stmtLockRef->fetch();
+        if ($lockRef || $orig['ref_type'] === 'closing') {
+            jsonResponse(['success' => false, 'message' => 'Jurnal Tutup Buku (Closing) tidak dapat dihapus langsung.'], 403);
+        }
+
+        // Cek periode terkunci
+        $stmtLockCheck = $db->prepare("SELECT period_name FROM period_locks WHERE ? <= period_end AND status = 'locked' ORDER BY period_end DESC LIMIT 1");
+        $stmtLockCheck->execute([$orig['date']]);
+        $lockHit = $stmtLockCheck->fetch();
+        if ($lockHit) {
+            jsonResponse([
+                'success' => false,
+                'message' => "Jurnal pada tanggal {$orig['date']} berada di periode terkunci ('{$lockHit['period_name']}')."
+            ], 403);
+        }
+
+        try {
+            $db->beginTransaction();
+
+            $stmtDelItems = $db->prepare("DELETE FROM journal_items WHERE journal_entry_id = ?");
+            $stmtDelItems->execute([$journalId]);
+
+            $stmtDelEntry = $db->prepare("DELETE FROM journal_entries WHERE id = ?");
+            $stmtDelEntry->execute([$journalId]);
+
+            $db->commit();
+
+            auditLog('DELETE', 'Jurnal Umum', "Menghapus jurnal #{$orig['transaction_no']}: {$orig['description']}", [
+                'deleted_id' => $journalId,
+                'transaction_no' => $orig['transaction_no'],
+                'date' => $orig['date'],
+                'ref_type' => $orig['ref_type']
+            ]);
+
+            jsonResponse(['success' => true, 'message' => "Jurnal {$orig['transaction_no']} berhasil dihapus."]);
+        } catch (Throwable $e) {
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+            jsonResponse(['success' => false, 'message' => 'Gagal menghapus jurnal: ' . $e->getMessage()], 500);
         }
         break;
 

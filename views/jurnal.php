@@ -83,26 +83,28 @@ requireAuth(['akuntan']);
     </div>
 </div>
 
-<!-- Modal Input Jurnal Manual -->
+<!-- Modal Input / Edit Jurnal Umum -->
 <div id="manual-journal-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] flex flex-col justify-between">
-        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+    <div class="bg-white dark:bg-[#11182c] rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] flex flex-col justify-between border border-slate-200/80 dark:border-white/10">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/10">
             <div>
-                <h4 class="font-extrabold text-sm text-slate-900">Entri Jurnal Umum Manual</h4>
-                <p class="text-[11px] text-slate-400">Pencatatan transaksi manual sesuai kaidah debit & kredit seimbang</p>
+                <h4 id="man-modal-title" class="font-extrabold text-sm text-slate-900 dark:text-white">Entri Jurnal Umum Manual</h4>
+                <p id="man-modal-subtitle" class="text-[11px] text-slate-400">Pencatatan transaksi manual sesuai kaidah debit & kredit seimbang</p>
             </div>
-            <button onclick="closeManualJournalModal()" class="text-slate-400 hover:text-slate-600 text-lg font-bold">&times;</button>
+            <button onclick="closeManualJournalModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-lg font-bold">&times;</button>
         </div>
+
+        <input type="hidden" id="man-journal-id" value="">
 
         <div class="space-y-3.5 flex-1 overflow-y-auto pr-1">
             <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Tanggal Transaksi</label>
-                    <input type="date" id="man-date" value="<?= date('Y-m-d') ?>" class="w-full p-2.5 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500" required>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Tanggal Transaksi</label>
+                    <input type="date" id="man-date" value="<?= date('Y-m-d') ?>" class="w-full p-2.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500" required>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Beban Cabang</label>
-                    <select id="man-branch" class="w-full p-2.5 text-xs rounded-xl border border-slate-300 bg-white font-medium focus:ring-2 focus:ring-indigo-500">
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Beban Cabang</label>
+                    <select id="man-branch" class="w-full p-2.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-medium focus:ring-2 focus:ring-indigo-500">
                         <?php foreach ($activeBranches as $b): ?>
                             <option value="<?= $b['id'] ?>"><?= htmlspecialchars($b['name']) ?></option>
                         <?php endforeach; ?>
@@ -111,15 +113,15 @@ requireAuth(['akuntan']);
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">Keterangan Transaksi</label>
-                <input type="text" id="man-desc" placeholder="Contoh: Pembayaran Biaya Listrik & Operasional Kantor" class="w-full p-2.5 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500" required>
+                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Keterangan Transaksi</label>
+                <input type="text" id="man-desc" placeholder="Contoh: Pembayaran Biaya Listrik & Operasional Kantor" class="w-full p-2.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500" required>
             </div>
 
             <!-- Dynamic Lines -->
             <div class="pt-2">
                 <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-bold text-slate-800">Baris Akun (Debit & Kredit)</span>
-                    <button type="button" onclick="addJournalRow()" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center space-x-1">
+                    <span class="text-xs font-bold text-slate-800 dark:text-slate-200">Baris Akun (Debit & Kredit)</span>
+                    <button type="button" onclick="addJournalRow()" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 flex items-center space-x-1">
                         <span>+ Tambah Baris</span>
                     </button>
                 </div>
@@ -136,12 +138,55 @@ requireAuth(['akuntan']);
             </div>
         </div>
 
-        <div class="flex items-center space-x-2 pt-3 border-t border-slate-100">
+        <div class="flex items-center space-x-2 pt-3 border-t border-slate-100 dark:border-white/10">
             <button onclick="submitManualJournal()" id="btn-save-journal" class="flex-1 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs transition-colors">
                 Simpan Jurnal Umum
             </button>
-            <button onclick="closeManualJournalModal()" class="py-3 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold">
+            <button onclick="closeManualJournalModal()" class="py-3 px-4 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold">
                 Batal
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Konfirmasi Hapus Jurnal -->
+<div id="delete-journal-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-[#11182c] rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-slate-200/80 dark:border-white/10">
+        <div class="flex items-start gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </div>
+            <div class="min-w-0 flex-1">
+                <h4 class="font-extrabold text-sm text-slate-900 dark:text-white">Hapus Jurnal Umum?</h4>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                    Jurnal beserta seluruh rincian debit dan kreditnya akan dihapus permanen dan saldo buku besar otomatis menyesuaikan.
+                </p>
+            </div>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-white/10 text-xs space-y-1">
+            <div class="flex justify-between gap-2">
+                <span class="text-slate-400">No. Bukti</span>
+                <span id="del-jrn-no" class="font-mono font-bold text-indigo-600 dark:text-indigo-400">-</span>
+            </div>
+            <div class="flex justify-between gap-2">
+                <span class="text-slate-400">Deskripsi</span>
+                <span id="del-jrn-desc" class="font-semibold text-slate-800 dark:text-slate-200 text-right truncate">-</span>
+            </div>
+            <div class="flex justify-between gap-2">
+                <span class="text-slate-400">Total Nominal</span>
+                <span id="del-jrn-total" class="font-mono font-bold text-slate-900 dark:text-white">Rp 0</span>
+            </div>
+        </div>
+
+        <input type="hidden" id="del-jrn-id" value="">
+
+        <div class="flex items-center justify-end gap-2 pt-2">
+            <button type="button" onclick="closeDeleteJournalModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition-colors">
+                Batal
+            </button>
+            <button type="button" onclick="executeDeleteJournal()" id="btn-confirm-delete-journal" class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-xs transition-colors">
+                Ya, Hapus Jurnal
             </button>
         </div>
     </div>
@@ -149,6 +194,7 @@ requireAuth(['akuntan']);
 
 <script>
     let rawAccounts = [];
+    let loadedJournals = [];
 
     document.addEventListener('DOMContentLoaded', async () => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -199,18 +245,20 @@ requireAuth(['akuntan']);
             const result = await res.json();
             if (!result.success) return;
 
+            loadedJournals = result.data || [];
+
             const tbody = document.getElementById('journal-table-body');
             tbody.innerHTML = '';
 
             const badgeCount = document.getElementById('journal-count-badge');
-            if (badgeCount) badgeCount.innerText = result.data.length + ' Transaksi';
+            if (badgeCount) badgeCount.innerText = loadedJournals.length + ' Transaksi';
 
-            if (result.data.length === 0) {
+            if (loadedJournals.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="5" class="py-12 text-center text-slate-400">Tidak ada jurnal pada periode atau kata kunci pencarian ini.</td></tr>';
                 return;
             }
 
-            result.data.forEach(j => {
+            loadedJournals.forEach(j => {
                 const trHeader = document.createElement('tr');
                 const isMatchedSearch = search && (
                     (j.transaction_no && j.transaction_no.toLowerCase().includes(search.toLowerCase())) ||
@@ -230,16 +278,27 @@ requireAuth(['akuntan']);
                 } else if (j.ref_type === 'closing') {
                     refBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800">Tutup Buku (Closing)</span>';
                 } else if (j.ref_type === 'reversal') {
-                    refBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">Jurnal Pembalik (Reversal)</span>';
+                    refBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">Koreksi / Reversal</span>';
                 }
 
                 if (isMatchedSearch) {
                     refBadge += ' <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-200 text-amber-900 border border-amber-300">Hasil Pencarian</span>';
                 }
 
-                let reverseBtn = '';
-                if (j.ref_type !== 'closing' && j.ref_type !== 'reversal') {
-                    reverseBtn = `<button onclick="promptReverseJournal(${j.id}, '${j.transaction_no}')" title="Buat Jurnal Pembalik (Audit Trail)" class="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-rose-50 hover:text-rose-700 text-slate-500 text-[10px] font-bold border border-slate-200/80 transition-colors">Batalkan / Balik</button>`;
+                let actionBtns = '';
+                if (j.ref_type !== 'closing') {
+                    actionBtns = `
+                        <div class="flex items-center gap-1.5 shrink-0 ml-2">
+                            <button type="button" onclick="openEditJournalModal(${j.id})" title="Edit Jurnal" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-[10px] font-bold border border-indigo-200/80 transition-colors cursor-pointer">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                <span>Edit</span>
+                            </button>
+                            <button type="button" onclick="openDeleteJournalModal(${j.id})" title="Hapus Jurnal" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 text-[10px] font-bold border border-rose-200/80 transition-colors cursor-pointer">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                <span>Hapus Jurnal</span>
+                            </button>
+                        </div>
+                    `;
                 }
 
                 trHeader.innerHTML = `
@@ -248,9 +307,9 @@ requireAuth(['akuntan']);
                         <span class="text-indigo-600 font-semibold text-[11px]">${j.transaction_no}</span>
                     </td>
                     <td class="py-3 px-4 text-slate-900 font-bold" colspan="2">
-                        <div class="flex items-center justify-between">
+                        <div class="flex items-center justify-between gap-2">
                             <span>${j.description}</span>
-                            ${reverseBtn}
+                            ${actionBtns}
                         </div>
                         <div class="mt-1 flex items-center space-x-2 font-normal text-slate-400 text-[11px]">
                             <span class="text-slate-600 font-medium">${j.branch_name || 'Kantor Pusat'}</span>
@@ -320,6 +379,15 @@ requireAuth(['akuntan']);
     }
 
     function openManualJournalModal() {
+        document.getElementById('man-journal-id').value = '';
+        document.getElementById('man-modal-title').innerText = 'Entri Jurnal Umum Manual';
+        document.getElementById('man-modal-subtitle').innerText = 'Pencatatan transaksi manual sesuai kaidah debit & kredit seimbang';
+        document.getElementById('btn-save-journal').innerText = 'Simpan Jurnal Umum';
+        document.getElementById('man-date').value = '<?= date('Y-m-d') ?>';
+        document.getElementById('man-desc').value = '';
+        const branchSel = document.getElementById('man-branch');
+        if (branchSel && branchSel.options.length > 0) branchSel.selectedIndex = 0;
+
         document.getElementById('manual-journal-modal').classList.remove('hidden');
         const container = document.getElementById('journal-rows-container');
         container.innerHTML = '';
@@ -329,25 +397,61 @@ requireAuth(['akuntan']);
         calculateJournalBalance();
     }
 
+    function openEditJournalModal(journalId) {
+        const j = loadedJournals.find(item => Number(item.id) === Number(journalId));
+        if (!j) {
+            showToast('Data jurnal tidak ditemukan.', 'error');
+            return;
+        }
+
+        document.getElementById('man-journal-id').value = j.id;
+        document.getElementById('man-modal-title').innerText = `Edit Jurnal Umum (${j.transaction_no})`;
+        document.getElementById('man-modal-subtitle').innerText = 'Perbarui tanggal, keterangan, atau baris akun debit & kredit (harus seimbang)';
+        document.getElementById('btn-save-journal').innerText = 'Simpan Perubahan Jurnal';
+        document.getElementById('man-date').value = j.date || '<?= date('Y-m-d') ?>';
+        document.getElementById('man-branch').value = j.branch_id || 1;
+        document.getElementById('man-desc').value = j.description || '';
+
+        document.getElementById('manual-journal-modal').classList.remove('hidden');
+        const container = document.getElementById('journal-rows-container');
+        container.innerHTML = '';
+
+        if (j.items && j.items.length > 0) {
+            j.items.forEach(it => addJournalRow(it));
+        } else {
+            addJournalRow();
+            addJournalRow();
+        }
+
+        initJournalBalanceMeter();
+        calculateJournalBalance();
+    }
+
     function closeManualJournalModal() {
         document.getElementById('manual-journal-modal').classList.add('hidden');
     }
 
-    function addJournalRow() {
+    function addJournalRow(prefill = null) {
         const container = document.getElementById('journal-rows-container');
         const div = document.createElement('div');
         div.className = 'grid grid-cols-12 gap-2 items-center journal-entry-row';
+        const selectedAccId = prefill ? Number(prefill.account_id) : null;
+        const debitVal = prefill && Number(prefill.debit) > 0 ? Number(prefill.debit) : '';
+        const creditVal = prefill && Number(prefill.credit) > 0 ? Number(prefill.credit) : '';
+        const memoVal = prefill && prefill.memo ? prefill.memo : '';
+
+        div.dataset.memo = memoVal;
         div.innerHTML = `
             <div class="col-span-5">
-                <select class="w-full p-2 text-xs rounded-xl border border-slate-300 bg-white row-acc-id focus:ring-2 focus:ring-indigo-500">
-                    ${rawAccounts.map(a => `<option value="${a.id}">[${a.code}] ${a.name}</option>`).join('')}
+                <select class="w-full p-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 row-acc-id focus:ring-2 focus:ring-indigo-500">
+                    ${rawAccounts.map(a => `<option value="${a.id}" ${selectedAccId === Number(a.id) ? 'selected' : ''}>[${a.code}] ${a.name}</option>`).join('')}
                 </select>
             </div>
             <div class="col-span-3">
-                <input type="number" oninput="calculateJournalBalance()" placeholder="Debit (Rp)" class="w-full p-2 text-xs rounded-xl border border-slate-300 row-debit font-mono focus:ring-2 focus:ring-indigo-500">
+                <input type="number" step="any" min="0" value="${debitVal}" oninput="calculateJournalBalance()" placeholder="Debit (Rp)" class="w-full p-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 row-debit font-mono focus:ring-2 focus:ring-indigo-500">
             </div>
             <div class="col-span-3">
-                <input type="number" oninput="calculateJournalBalance()" placeholder="Kredit (Rp)" class="w-full p-2 text-xs rounded-xl border border-slate-300 row-credit font-mono focus:ring-2 focus:ring-indigo-500">
+                <input type="number" step="any" min="0" value="${creditVal}" oninput="calculateJournalBalance()" placeholder="Kredit (Rp)" class="w-full p-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 row-credit font-mono focus:ring-2 focus:ring-indigo-500">
             </div>
             <div class="col-span-1 text-center">
                 <button type="button" onclick="this.closest('.journal-entry-row').remove(); calculateJournalBalance();" class="text-slate-400 hover:text-rose-600 p-1">
@@ -377,7 +481,7 @@ requireAuth(['akuntan']);
             const isBalanced = journalMeter.update();
             if (btn) btn.disabled = !isBalanced;
         } else {
-            if (totalDebit > 0 && totalDebit === totalCredit) {
+            if (totalDebit > 0 && Math.abs(totalDebit - totalCredit) < 0.01) {
                 if (badge) {
                     badge.innerText = '✓ SEIMBANG (BALANCE)';
                     badge.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800';
@@ -399,6 +503,13 @@ requireAuth(['akuntan']);
             return;
         }
 
+        const desc = (document.getElementById('man-desc').value || '').trim();
+        if (!desc) {
+            showToast('Keterangan transaksi wajib diisi!', 'error');
+            document.getElementById('man-desc').focus();
+            return;
+        }
+
         const rows = document.querySelectorAll('.journal-entry-row');
         const items = [];
 
@@ -406,26 +517,36 @@ requireAuth(['akuntan']);
             const accId = r.querySelector('.row-acc-id').value;
             const debit = Number(r.querySelector('.row-debit').value) || 0;
             const credit = Number(r.querySelector('.row-credit').value) || 0;
-            if (debit > 0 || credit > 0) {
-                items.push({ account_id: accId, debit: debit, credit: credit, memo: '' });
+            const memo = r.dataset.memo || '';
+            if (accId && (debit > 0 || credit > 0)) {
+                items.push({ account_id: accId, debit: debit, credit: credit, memo: memo });
             }
         });
 
         if (items.length < 2) {
-            showToast('Jurnal minimal memiliki 2 baris akun!', 'error');
+            showToast('Jurnal minimal memiliki 2 baris akun (Debit & Kredit)!', 'error');
             return;
         }
 
+        const editId = document.getElementById('man-journal-id').value;
+        const isEdit = editId !== '';
         const payload = {
+            id: isEdit ? Number(editId) : undefined,
             date: document.getElementById('man-date').value,
             branch_id: document.getElementById('man-branch').value,
-            description: document.getElementById('man-desc').value,
+            description: desc,
             ref_type: 'manual',
             items: items
         };
 
+        const btn = document.getElementById('btn-save-journal');
+        const originalText = btn.innerText;
+        btn.disabled = true;
+        btn.innerText = isEdit ? 'Menyimpan Perubahan...' : 'Menyimpan Jurnal...';
+
         try {
-            const res = await fetch('../api/journals.php?action=create', {
+            const endpoint = isEdit ? '../api/journals.php?action=update' : '../api/journals.php?action=create';
+            const res = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -440,31 +561,54 @@ requireAuth(['akuntan']);
             }
         } catch (e) {
             showToast('Kesalahan koneksi!', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerText = originalText;
         }
     }
 
-    async function promptReverseJournal(journalId, trxNo) {
-        const reason = prompt(`Masukkan alasan pembuatan Jurnal Pembalik untuk membatalkan [${trxNo}]:`, "Koreksi salah input transaksi");
-        if (!reason || !reason.trim()) return;
+    function openDeleteJournalModal(journalId) {
+        const j = loadedJournals.find(item => Number(item.id) === Number(journalId));
+        if (!j) return;
+
+        document.getElementById('del-jrn-id').value = j.id;
+        document.getElementById('del-jrn-no').innerText = j.transaction_no || '-';
+        document.getElementById('del-jrn-desc').innerText = j.description || '-';
+        document.getElementById('del-jrn-total').innerText = 'Rp ' + Number(j.total_debit || 0).toLocaleString('id-ID');
+        document.getElementById('delete-journal-modal').classList.remove('hidden');
+    }
+
+    function closeDeleteJournalModal() {
+        document.getElementById('delete-journal-modal').classList.add('hidden');
+    }
+
+    async function executeDeleteJournal() {
+        const journalId = document.getElementById('del-jrn-id').value;
+        if (!journalId) return;
+
+        const btn = document.getElementById('btn-confirm-delete-journal');
+        btn.disabled = true;
+        btn.innerText = 'Menghapus...';
 
         try {
-            const formData = new FormData();
-            formData.append('journal_id', journalId);
-            formData.append('reason', reason.trim());
-
-            const res = await fetch('../api/journals.php?action=reverse', {
+            const res = await fetch('../api/journals.php?action=delete', {
                 method: 'POST',
-                body: formData
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ journal_id: Number(journalId) })
             });
             const result = await res.json();
             if (result.success) {
-                showToast(result.message, 'success');
+                showToast(result.message || 'Jurnal berhasil dihapus.', 'success');
+                closeDeleteJournalModal();
                 loadJournals();
             } else {
-                showToast(result.message || 'Gagal membuat jurnal pembalik.', 'error');
+                showToast(result.message || 'Gagal menghapus jurnal.', 'error');
             }
         } catch (e) {
-            showToast('Kesalahan koneksi saat memproses jurnal pembalik.', 'error');
+            showToast('Kesalahan koneksi saat menghapus jurnal.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerText = 'Ya, Hapus Jurnal';
         }
     }
 </script>

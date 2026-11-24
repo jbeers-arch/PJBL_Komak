@@ -196,6 +196,107 @@ switch ($action) {
         }
         break;
 
+    case 'update_stock':
+        requireAuth(['akuntan']);
+        $rawBody = file_get_contents('php://input');
+        $jsonBody = [];
+        if ($rawBody !== '' && $rawBody !== false) {
+            $decoded = json_decode($rawBody, true);
+            if (is_array($decoded)) {
+                $jsonBody = $decoded;
+            }
+        }
+        $input = array_merge($jsonBody, $_POST);
+
+        $productId = (int)($input['product_id'] ?? 0);
+        $reason = trim($input['reason'] ?? 'Pembaruan Stok Persediaan');
+        if ($reason === '') {
+            $reason = 'Pembaruan Stok Persediaan';
+        }
+        $rawStocks = $input['stocks'] ?? [];
+        $stocks = is_string($rawStocks) ? json_decode($rawStocks, true) : $rawStocks;
+
+        if ($productId <= 0 || !is_array($stocks) || empty($stocks)) {
+            jsonResponse(['success' => false, 'message' => 'Produk dan data stok cabang wajib diisi.'], 400);
+        }
+
+        $stmtProd = $db->prepare("SELECT id, code, name, unit, cost_price FROM products WHERE id = ?");
+        $stmtProd->execute([$productId]);
+        $product = $stmtProd->fetch(PDO::FETCH_ASSOC);
+        if (!$product) {
+            jsonResponse(['success' => false, 'message' => 'Produk persediaan tidak ditemukan.'], 404);
+        }
+
+        try {
+            $db->beginTransaction();
+
+            $stmtGet = $db->prepare("SELECT stock FROM branch_stocks WHERE branch_id = ? AND product_id = ?");
+            $stmtUpsert = $db->prepare("INSERT INTO branch_stocks (branch_id, product_id, stock, updated_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+                                        ON CONFLICT(branch_id, product_id) DO UPDATE SET stock = excluded.stock, updated_at = CURRENT_TIMESTAMP");
+            $stmtAdj = $db->prepare("INSERT INTO stock_adjustments 
+                (branch_id, product_id, type, qty_change, previous_stock, new_stock, cost_impact, reason, adjusted_by) 
+                VALUES (?, ?, 'opname', ?, ?, ?, ?, ?, ?)");
+
+            $changes = [];
+            foreach ($stocks as $st) {
+                $bId = (int)($st['branch_id'] ?? 0);
+                if ($bId <= 0) continue;
+                $newStock = max(0, (int)($st['stock'] ?? 0));
+
+                $stmtGet->execute([$bId, $productId]);
+                $prevVal = $stmtGet->fetchColumn();
+                $prevStock = ($prevVal === false) ? 0 : (int)$prevVal;
+
+                $stmtUpsert->execute([$bId, $productId, $newStock]);
+
+                if ($newStock !== $prevStock) {
+                    $diff = $newStock - $prevStock;
+                    $costImpact = abs($diff) * (float)$product['cost_price'];
+                    $stmtAdj->execute([
+                        $bId,
+                        $productId,
+                        $diff,
+                        $prevStock,
+                        $newStock,
+                        $costImpact,
+                        $reason,
+                        $_SESSION['user']['id']
+                    ]);
+                    $changes[] = "Cabang #$bId: $prevStock -> $newStock";
+                }
+            }
+
+            // Sinkronkan total stok global pada tabel products
+            $stmtSum = $db->prepare("SELECT COALESCE(SUM(stock), 0) FROM branch_stocks WHERE product_id = ?");
+            $stmtSum->execute([$productId]);
+            $totalStock = (int)$stmtSum->fetchColumn();
+
+            $stmtUpdProd = $db->prepare("UPDATE products SET stock = ? WHERE id = ?");
+            $stmtUpdProd->execute([$totalStock, $productId]);
+
+            $db->commit();
+
+            auditLog('UPDATE', 'Persediaan', "Memperbarui stok {$product['name']} ({$product['code']}): " . (empty($changes) ? 'Tidak ada selisih' : implode(', ', $changes)), [
+                'product_id' => $productId,
+                'product_name' => $product['name'],
+                'total_stock' => $totalStock,
+                'changes' => $changes,
+                'reason' => $reason
+            ]);
+
+            jsonResponse([
+                'success' => true,
+                'message' => "Stok persediaan {$product['name']} berhasil diperbarui (Total Jaringan: {$totalStock} {$product['unit']}).",
+                'total_stock' => $totalStock
+            ]);
+        } catch (Throwable $e) {
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+            jsonResponse(['success' => false, 'message' => 'Gagal memperbarui stok persediaan: ' . $e->getMessage()], 500);
+        }
+        break;
+
     default:
         jsonResponse(['success' => false, 'message' => 'Aksi tidak dikenal.'], 400);
 }

@@ -413,74 +413,111 @@ $userBranchId = $_SESSION['user']['branch_id'] ?? 2; // Default Cabang 1 jika be
 </div>
 
 <!-- Modal Struk Thermal Transaksi -->
-<div id="receipt-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4">
-        <div id="receipt-print-area" class="font-mono text-xs text-slate-800 p-4 border border-dashed border-slate-300 rounded-2xl bg-white pos-receipt-paper">
+<div id="receipt-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4 my-auto">
+        <div id="receipt-print-area" class="text-xs text-slate-800 p-5 border border-slate-200 rounded-2xl bg-white pos-receipt-paper shadow-2xs">
             <div id="receipt-chk-badge" class="pos-receipt-chk">
                 <svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
             </div>
-            <div class="text-center pb-3 border-b border-dashed border-slate-300">
-                <h4 class="font-extrabold text-base tracking-tight text-slate-900">PJBL KOMAK LAUNDRY</h4>
-                <p class="text-[10px] text-slate-500 font-sans"><?= htmlspecialchars($currentUser['branch_name'] ?? 'Cabang') ?> &bull; Jasa Cuci Kiloan &amp; Satuan</p>
-                <div class="mt-2 text-[10px] text-slate-600 space-y-0.5">
-                    <p id="rcp-trx-no">TRX-000</p>
-                    <p id="rcp-date">2026-09-25 12:00</p>
-                    <p id="rcp-customer" class="font-bold text-slate-800 font-sans text-[11px]">Pelanggan: Umum</p>
-                    <p id="rcp-phone" class="text-slate-600 font-sans hidden">WA: -</p>
-                    <div id="rcp-rack-box" class="pt-1 flex items-center justify-center space-x-1.5 hidden">
-                        <span id="rcp-rack" class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold text-[10px]">Rak: -</span>
-                        <span id="rcp-estimate" class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold text-[10px]">Siap: -</span>
-                    </div>
+
+            <!-- Header Brand -->
+            <div class="text-center pb-3.5 border-b border-dashed border-slate-300">
+                <h4 class="font-extrabold text-base tracking-tight text-slate-900 uppercase">PJBL KOMAK LAUNDRY</h4>
+                <p id="rcp-branch-name" class="text-[11px] text-slate-500 font-medium mt-0.5"><?= htmlspecialchars($currentUser['branch_name'] ?? 'Cabang') ?> &bull; Jasa Cuci Kiloan &amp; Satuan</p>
+            </div>
+
+            <!-- Metadata Nota -->
+            <div class="py-3 border-b border-dashed border-slate-300 space-y-1.5 text-[11px]">
+                <div class="flex items-center justify-between gap-2">
+                    <span class="text-slate-400">No. Nota</span>
+                    <span id="rcp-trx-no" class="font-mono font-bold text-slate-800 text-right">TRX-000</span>
+                </div>
+                <div class="flex items-center justify-between gap-2">
+                    <span class="text-slate-400">Tanggal</span>
+                    <span id="rcp-date" class="font-mono text-slate-700 text-right">2026-09-25 12:00</span>
+                </div>
+                <div class="flex items-center justify-between gap-2">
+                    <span class="text-slate-400">Kasir</span>
+                    <span id="rcp-cashier" class="font-semibold text-slate-700 text-right"><?= htmlspecialchars($currentUser['name'] ?? 'Kasir') ?></span>
+                </div>
+                <div class="flex items-center justify-between gap-2">
+                    <span class="text-slate-400">Pelanggan</span>
+                    <span id="rcp-customer" class="font-bold text-slate-900 text-right">Pelanggan Umum</span>
+                </div>
+                <div id="rcp-phone-row" class="flex items-center justify-between gap-2 hidden">
+                    <span class="text-slate-400">WhatsApp</span>
+                    <span id="rcp-phone" class="font-mono text-slate-700 text-right">-</span>
+                </div>
+                <div id="rcp-rack-box" class="pt-1.5 flex items-center justify-center flex-wrap gap-1.5 hidden">
+                    <span id="rcp-rack" class="px-2.5 py-0.5 rounded-lg bg-amber-50 border border-amber-200/80 text-amber-800 font-bold text-[10px]">Rak: -</span>
+                    <span id="rcp-estimate" class="px-2.5 py-0.5 rounded-lg bg-blue-50 border border-blue-200/80 text-blue-800 font-bold text-[10px]">Siap: -</span>
                 </div>
             </div>
 
-            <div id="rcp-items" class="py-3 border-b border-dashed border-slate-300 space-y-1.5 text-xs"></div>
+            <!-- Daftar Layanan -->
+            <div class="py-3 border-b border-dashed border-slate-300">
+                <div class="flex justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">
+                    <span>Rincian Layanan</span>
+                    <span>Subtotal</span>
+                </div>
+                <div id="rcp-items" class="space-y-2 text-xs"></div>
+            </div>
 
-            <div class="pt-3 space-y-1 text-xs">
-                <div id="rcp-subtotal-row" class="flex justify-between text-slate-600 hidden">
-                    <span>Subtotal:</span>
-                    <span id="rcp-subtotal">Rp 0</span>
+            <!-- Ringkasan Pembayaran -->
+            <div class="pt-3 space-y-1.5 text-xs">
+                <div id="rcp-subtotal-row" class="flex justify-between text-slate-500 hidden">
+                    <span>Subtotal</span>
+                    <span id="rcp-subtotal" class="font-mono">Rp 0</span>
                 </div>
                 <div id="rcp-discount-row" class="flex justify-between text-rose-600 hidden">
-                    <span>Diskon / Promo:</span>
-                    <span id="rcp-discount">- Rp 0</span>
+                    <span>Diskon / Promo</span>
+                    <span id="rcp-discount" class="font-mono">- Rp 0</span>
                 </div>
-                <div id="rcp-tax-row" class="flex justify-between text-slate-600 hidden">
-                    <span>Pajak Layanan (10%):</span>
-                    <span id="rcp-tax">Rp 0</span>
+                <div id="rcp-tax-row" class="flex justify-between text-slate-500 hidden">
+                    <span>Pajak Layanan (10%)</span>
+                    <span id="rcp-tax" class="font-mono">Rp 0</span>
                 </div>
-                <div class="flex justify-between font-bold text-slate-900 border-t border-dashed border-slate-200 pt-1">
-                    <span>Total Tagihan:</span>
-                    <span id="rcp-total">Rp 0</span>
+                <div class="flex justify-between items-center font-extrabold text-slate-900 bg-slate-50 border border-slate-200/80 rounded-xl px-3 py-2 my-1">
+                    <span class="text-xs">Total Tagihan</span>
+                    <span id="rcp-total" class="font-mono text-sm">Rp 0</span>
                 </div>
-                <div class="flex justify-between text-slate-600">
-                    <span>Bayar (<span id="rcp-method">Tunai</span>):</span>
-                    <span id="rcp-cash">Rp 0</span>
+                <div class="flex justify-between text-slate-600 px-1">
+                    <span>Bayar (<span id="rcp-method">Tunai</span>)</span>
+                    <span id="rcp-cash" class="font-mono font-semibold">Rp 0</span>
                 </div>
-                <div class="flex justify-between font-bold text-emerald-700">
-                    <span>Kembalian:</span>
-                    <span id="rcp-change">Rp 0</span>
+                <div class="flex justify-between font-bold text-emerald-700 px-1">
+                    <span>Kembalian</span>
+                    <span id="rcp-change" class="font-mono">Rp 0</span>
+                </div>
+                <div class="flex justify-between items-center px-1 pt-0.5">
+                    <span class="text-[11px] text-slate-500">Status Pembayaran</span>
+                    <span id="rcp-pay-status" class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800">LUNAS</span>
                 </div>
             </div>
 
-            <div class="text-center pt-3 border-t border-dashed border-slate-300 text-[10px] text-slate-400">
-                <p>Simpan nota ini sebagai tanda terima pengambilan cucian.</p>
-                <p class="mt-0.5">Pakaian bersih, wangi &amp; rapi adalah prioritas kami.</p>
-                <p id="rcp-sync-status" class="font-bold text-emerald-600 mt-1">STATUS: TERSINKRON KE SIA PUSAT</p>
-                <p class="text-[9px] text-slate-400 font-sans mt-0.5">&bull; Pencatatan Persediaan: Perpetual SAK EMKM &bull;</p>
+            <!-- Footer Bersih -->
+            <div class="text-center pt-3.5 mt-3 border-t border-dashed border-slate-300 text-[10px] text-slate-500 leading-relaxed">
+                <p class="font-semibold text-slate-700">Simpan nota ini sebagai tanda terima pengambilan cucian.</p>
+                <p class="mt-0.5 text-slate-400">Pakaian bersih, wangi &amp; rapi adalah prioritas kami.</p>
             </div>
         </div>
 
-        <div class="flex items-center space-x-2">
-            <button onclick="window.print()" class="flex-1 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-xs transition-colors flex items-center justify-center space-x-1.5">
+        <!-- Hint untuk Pengiriman Foto WA di Desktop -->
+        <div id="rcp-wa-hint" class="hidden px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200/80 text-[11px] text-emerald-800 leading-snug"></div>
+
+        <div class="flex items-center gap-2">
+            <button type="button" onclick="window.print()" class="px-3.5 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-xs transition-colors flex items-center justify-center space-x-1.5 cursor-pointer" title="Cetak Struk">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                 <span>Cetak</span>
             </button>
-            <a id="btn-wa-receipt" href="#" target="_blank" class="flex-1 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-colors flex items-center justify-center space-x-1.5">
+            <button type="button" onclick="downloadReceiptPhoto()" class="px-3 py-3 rounded-2xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200/80 text-xs font-bold transition-colors flex items-center justify-center cursor-pointer" title="Unduh Foto Struk (PNG)">
+                <i class="fa-solid fa-image text-sm"></i>
+            </button>
+            <button type="button" id="btn-wa-receipt" onclick="sendReceiptToWhatsApp()" class="flex-1 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-colors flex items-center justify-center space-x-1.5 cursor-pointer">
                 <i class="fa-brands fa-whatsapp text-sm"></i>
-                <span>Kirim WA</span>
-            </a>
-            <button onclick="closeReceiptModal()" class="px-4 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors">
+                <span>Kirim WA (Foto + Teks)</span>
+            </button>
+            <button type="button" onclick="closeReceiptModal()" class="px-3.5 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer">
                 Tutup
             </button>
         </div>
@@ -1444,7 +1481,13 @@ $userBranchId = $_SESSION['user']['branch_id'] ?? 2; // Default Cabang 1 jika be
         renderProducts(allProducts);
     }
 
+    let activeReceiptData = null;
+    let activeReceiptWaText = '';
+    let activeReceiptWaPhone = '';
+
     function showReceiptModal(trx, isSynced) {
+        activeReceiptData = trx;
+
         const paper = document.getElementById('receipt-print-area');
         if (paper) {
             paper.classList.remove('pos-receipt-paper');
@@ -1458,12 +1501,27 @@ $userBranchId = $_SESSION['user']['branch_id'] ?? 2; // Default Cabang 1 jika be
             chkBadge.classList.add('pos-receipt-chk');
         }
 
+        const waHint = document.getElementById('rcp-wa-hint');
+        if (waHint) {
+            waHint.classList.add('hidden');
+            waHint.innerHTML = '';
+        }
+
         document.getElementById('rcp-trx-no').innerText = trx.transaction_no;
         document.getElementById('rcp-date').innerText = trx.date;
         document.getElementById('rcp-total').innerText = 'Rp ' + Number(trx.total_amount).toLocaleString('id-ID');
         document.getElementById('rcp-method').innerText = trx.payment_method;
         document.getElementById('rcp-cash').innerText = 'Rp ' + Number(trx.cash_received).toLocaleString('id-ID');
         document.getElementById('rcp-change').innerText = 'Rp ' + Number(trx.change_amount).toLocaleString('id-ID');
+
+        const isPaid = Number(trx.cash_received) >= Number(trx.total_amount);
+        const payStatusEl = document.getElementById('rcp-pay-status');
+        if (payStatusEl) {
+            payStatusEl.innerText = isPaid ? 'LUNAS' : 'BELUM LUNAS';
+            payStatusEl.className = isPaid
+                ? 'px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800'
+                : 'px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-800';
+        }
 
         // Subtotal, Discount & Tax breakdown on receipt
         const subtotalRow = document.getElementById('rcp-subtotal-row');
@@ -1493,21 +1551,22 @@ $userBranchId = $_SESSION['user']['branch_id'] ?? 2; // Default Cabang 1 jika be
             if (taxRow) taxRow.classList.add('hidden');
         }
 
-        const custName = trx.customer_name || 'Umum';
+        const custName = trx.customer_name || 'Pelanggan Umum';
         const custPhone = trx.customer_phone || '';
         const rackNo = trx.rack_no || '';
         const estimateDate = trx.estimated_completion || '';
 
         const custEl = document.getElementById('rcp-customer');
-        if (custEl) custEl.innerText = 'Pelanggan: ' + custName;
+        if (custEl) custEl.innerText = custName;
 
+        const phoneRow = document.getElementById('rcp-phone-row');
         const phoneEl = document.getElementById('rcp-phone');
-        if (phoneEl) {
+        if (phoneRow && phoneEl) {
             if (custPhone) {
-                phoneEl.innerText = 'WhatsApp: ' + custPhone;
-                phoneEl.classList.remove('hidden');
+                phoneEl.innerText = custPhone;
+                phoneRow.classList.remove('hidden');
             } else {
-                phoneEl.classList.add('hidden');
+                phoneRow.classList.add('hidden');
             }
         }
 
@@ -1522,57 +1581,413 @@ $userBranchId = $_SESSION['user']['branch_id'] ?? 2; // Default Cabang 1 jika be
             }
         }
 
-        // Generate WhatsApp notification text
+        // Generate clean WhatsApp notification text
+        const branchLabel = (document.getElementById('rcp-branch-name')?.innerText || 'PJBL Komak Laundry').split('•')[0].trim();
         let waText = `*PJBL KOMAK LAUNDRY*\n`;
-        waText += `Halo Kak ${custName}, terima kasih telah mencuci di PJBL Komak Laundry!\n\n`;
-        waText += `*Rincian Nota Cucian:*\n`;
-        waText += `No. Nota: ${trx.transaction_no}\n`;
-        waText += `Tanggal: ${trx.date}\n`;
-        if (rackNo) waText += `Lokasi Rak: ${rackNo}\n`;
-        if (estimateDate) waText += `Estimasi Siap Ambil: ${estimateDate}\n`;
+        waText += `${branchLabel}\n`;
+        waText += `==============================\n`;
+        waText += `Halo Kak *${custName}*, terima kasih telah menggunakan layanan kami!\n\n`;
+        waText += `*RINCIAN NOTA CUCIAN*\n`;
+        waText += `No. Nota : ${trx.transaction_no}\n`;
+        waText += `Tanggal  : ${trx.date}\n`;
+        if (rackNo) waText += `Lokasi Rak : ${rackNo}\n`;
+        if (estimateDate) waText += `Estimasi Siap : ${estimateDate}\n`;
         waText += `\n*Daftar Layanan:*\n`;
         trx.items.forEach(it => {
             const u = it.unit ? ` ${it.unit}` : '';
-            waText += `- ${it.name} (${it.qty}${u}): Rp ${Number(it.subtotal).toLocaleString('id-ID')}\n`;
+            const unitPrice = Number(it.price || (it.qty ? it.subtotal / it.qty : 0));
+            waText += `- ${it.name}\n  ${it.qty}${u} x Rp ${unitPrice.toLocaleString('id-ID')} = Rp ${Number(it.subtotal).toLocaleString('id-ID')}\n`;
         });
-        waText += `\n*Total Tagihan: Rp ${Number(trx.total_amount).toLocaleString('id-ID')}*\n`;
-        waText += `Metode Pembayaran: ${trx.payment_method}\n`;
-        waText += `Status Bayar: ${Number(trx.cash_received) >= Number(trx.total_amount) ? 'LUNAS' : 'Belum Lunas'}\n\n`;
-        waText += `Kami akan menginfokan kembali saat cucian selesai. Harap tunjukkan pesan ini saat pengambilan. Terima kasih! 🙏`;
+        waText += `------------------------------\n`;
+        if (trx.discount_amount && Number(trx.discount_amount) > 0) {
+            waText += `Diskon : - Rp ${Number(trx.discount_amount).toLocaleString('id-ID')}\n`;
+        }
+        if (trx.tax_amount && Number(trx.tax_amount) > 0) {
+            waText += `Pajak  : Rp ${Number(trx.tax_amount).toLocaleString('id-ID')}\n`;
+        }
+        waText += `*TOTAL TAGIHAN : Rp ${Number(trx.total_amount).toLocaleString('id-ID')}*\n`;
+        waText += `Bayar (${trx.payment_method}) : Rp ${Number(trx.cash_received).toLocaleString('id-ID')}\n`;
+        waText += `Kembalian : Rp ${Number(trx.change_amount).toLocaleString('id-ID')}\n`;
+        waText += `Status : *${isPaid ? 'LUNAS' : 'BELUM LUNAS'}*\n`;
+        waText += `==============================\n`;
+        waText += `Simpan nota ini sebagai tanda terima pengambilan cucian. Terima kasih!`;
 
         let cleanedPhone = custPhone.replace(/[^0-9]/g, '');
         if (cleanedPhone.startsWith('0')) {
             cleanedPhone = '62' + cleanedPhone.slice(1);
         }
 
-        const btnWa = document.getElementById('btn-wa-receipt');
-        if (btnWa) {
-            btnWa.href = `https://api.whatsapp.com/send?phone=${cleanedPhone}&text=${encodeURIComponent(waText)}`;
-        }
+        activeReceiptWaText = waText;
+        activeReceiptWaPhone = cleanedPhone;
 
         const itemsContainer = document.getElementById('rcp-items');
         itemsContainer.innerHTML = '';
         trx.items.forEach(it => {
             const row = document.createElement('div');
-            row.className = 'flex justify-between';
+            row.className = 'flex items-start justify-between gap-2';
             const unitLabel = it.unit ? ` ${it.unit}` : '';
+            const unitPrice = Number(it.price || (it.qty ? it.subtotal / it.qty : 0));
             row.innerHTML = `
-                <span>${it.name} (${it.qty}${unitLabel})</span>
-                <span>Rp ${Number(it.subtotal).toLocaleString('id-ID')}</span>
+                <div class="min-w-0 flex-1">
+                    <div class="font-semibold text-slate-800 leading-snug">${it.name}</div>
+                    <div class="text-[10px] text-slate-400 font-mono">${it.qty}${unitLabel} &times; Rp ${unitPrice.toLocaleString('id-ID')}</div>
+                </div>
+                <div class="font-mono font-bold text-slate-900 shrink-0">Rp ${Number(it.subtotal).toLocaleString('id-ID')}</div>
             `;
             itemsContainer.appendChild(row);
         });
 
-        const statusEl = document.getElementById('rcp-sync-status');
-        if (isSynced) {
-            statusEl.className = 'font-bold text-emerald-600 mt-1';
-            statusEl.innerText = 'STATUS: TERSINKRON KE SIA PUSAT (JURNAL AKTIF)';
-        } else {
-            statusEl.className = 'font-bold text-amber-600 mt-1';
-            statusEl.innerText = 'STATUS: TERSIMPAN LOKAL (PENDING SYNC)';
+        document.getElementById('receipt-modal').classList.remove('hidden');
+    }
+
+    function generateReceiptImageBlob(trx) {
+        return new Promise((resolve, reject) => {
+            try {
+                const scale = 2;
+                const width = 420;
+                const padX = 28;
+                const innerW = width - padX * 2;
+                const items = trx.items || [];
+                const branchLabel = (document.getElementById('rcp-branch-name')?.innerText || 'PJBL Komak Laundry').trim();
+                const cashierLabel = (document.getElementById('rcp-cashier')?.innerText || 'Kasir').trim();
+                const custName = trx.customer_name || 'Pelanggan Umum';
+                const custPhone = trx.customer_phone || '';
+                const rackNo = trx.rack_no || '';
+                const estimateDate = trx.estimated_completion || '';
+                const isPaid = Number(trx.cash_received) >= Number(trx.total_amount);
+
+                // Estimasi tinggi dinamis agar semua item muat rapi
+                let extraLines = 0;
+                if (custPhone) extraLines += 22;
+                if (rackNo || estimateDate) extraLines += 36;
+                if (trx.discount_amount && Number(trx.discount_amount) > 0) extraLines += 44;
+                if (trx.tax_amount && Number(trx.tax_amount) > 0) extraLines += 22;
+
+                const height = 430 + (items.length * 42) + extraLines;
+
+                const canvas = document.createElement('canvas');
+                canvas.width = width * scale;
+                canvas.height = height * scale;
+                const ctx = canvas.getContext('2d');
+                ctx.scale(scale, scale);
+
+                // Background luar lembut + kartu struk putih bersih
+                ctx.fillStyle = '#f8fafc';
+                ctx.fillRect(0, 0, width, height);
+
+                // Card putih
+                const drawRoundRect = (x, y, w, h, r) => {
+                    ctx.beginPath();
+                    ctx.moveTo(x + r, y);
+                    ctx.lineTo(x + w - r, y);
+                    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+                    ctx.lineTo(x + w, y + h - r);
+                    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+                    ctx.lineTo(x + r, y + h);
+                    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+                    ctx.lineTo(x, y + r);
+                    ctx.quadraticCurveTo(x, y, x + r, y);
+                    ctx.closePath();
+                };
+
+                drawRoundRect(12, 12, width - 24, height - 24, 18);
+                ctx.fillStyle = '#ffffff';
+                ctx.fill();
+                ctx.strokeStyle = '#e2e8f0';
+                ctx.lineWidth = 1.2;
+                ctx.stroke();
+
+                const drawDashedLine = (y) => {
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.setLineDash([4, 4]);
+                    ctx.strokeStyle = '#cbd5e1';
+                    ctx.lineWidth = 1;
+                    ctx.moveTo(padX, y);
+                    ctx.lineTo(width - padX, y);
+                    ctx.stroke();
+                    ctx.restore();
+                };
+
+                let y = 44;
+
+                // Checkmark badge
+                ctx.beginPath();
+                ctx.arc(width / 2, y, 18, 0, Math.PI * 2);
+                ctx.fillStyle = '#ecfdf5';
+                ctx.fill();
+                ctx.strokeStyle = '#10b981';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(width / 2 - 7, y + 1);
+                ctx.lineTo(width / 2 - 2, y + 6);
+                ctx.lineTo(width / 2 + 8, y - 5);
+                ctx.strokeStyle = '#059669';
+                ctx.lineWidth = 2.4;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.stroke();
+
+                y += 38;
+
+                // Header
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#0f172a';
+                ctx.font = '800 17px "Plus Jakarta Sans", Arial, sans-serif';
+                ctx.fillText('PJBL KOMAK LAUNDRY', width / 2, y);
+
+                y += 18;
+                ctx.fillStyle = '#64748b';
+                ctx.font = '500 11px "Plus Jakarta Sans", Arial, sans-serif';
+                ctx.fillText(branchLabel, width / 2, y);
+
+                y += 18;
+                drawDashedLine(y);
+                y += 22;
+
+                // Metadata rows
+                const drawKeyVal = (label, val, boldVal = false, valColor = '#0f172a') => {
+                    ctx.textAlign = 'left';
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.font = '500 11px "Plus Jakarta Sans", Arial, sans-serif';
+                    ctx.fillText(label, padX, y);
+
+                    ctx.textAlign = 'right';
+                    ctx.fillStyle = valColor;
+                    ctx.font = (boldVal ? '700' : '600') + ' 11px "Plus Jakarta Sans", Arial, sans-serif';
+                    ctx.fillText(String(val), width - padX, y);
+                    y += 20;
+                };
+
+                drawKeyVal('No. Nota', trx.transaction_no, true, '#0f172a');
+                drawKeyVal('Tanggal', trx.date, false, '#334155');
+                drawKeyVal('Kasir', cashierLabel, false, '#334155');
+                drawKeyVal('Pelanggan', custName, true, '#0f172a');
+                if (custPhone) {
+                    drawKeyVal('WhatsApp', custPhone, false, '#334155');
+                }
+
+                if (rackNo || estimateDate) {
+                    y += 4;
+                    const pillText1 = rackNo ? `Rak: ${rackNo}` : 'Rak: -';
+                    const pillText2 = estimateDate ? `Siap: ${estimateDate}` : 'Siap: 2 Hari';
+                    const badgeLine = `${pillText1}   |   ${pillText2}`;
+                    drawRoundRect(padX + 20, y - 14, innerW - 40, 24, 8);
+                    ctx.fillStyle = '#eff6ff';
+                    ctx.fill();
+                    ctx.textAlign = 'center';
+                    ctx.fillStyle = '#1e40af';
+                    ctx.font = '700 10.5px "Plus Jakarta Sans", Arial, sans-serif';
+                    ctx.fillText(badgeLine, width / 2, y + 2);
+                    y += 22;
+                }
+
+                y += 4;
+                drawDashedLine(y);
+                y += 20;
+
+                // Items header
+                ctx.textAlign = 'left';
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '700 10px "Plus Jakarta Sans", Arial, sans-serif';
+                ctx.fillText('RINCIAN LAYANAN', padX, y);
+                ctx.textAlign = 'right';
+                ctx.fillText('SUBTOTAL', width - padX, y);
+                y += 20;
+
+                // Items list
+                items.forEach(it => {
+                    const u = it.unit ? ` ${it.unit}` : '';
+                    const unitPrice = Number(it.price || (it.qty ? it.subtotal / it.qty : 0));
+                    const nameText = String(it.name || '').length > 34 ? String(it.name).slice(0, 33) + '...' : String(it.name || '');
+
+                    ctx.textAlign = 'left';
+                    ctx.fillStyle = '#0f172a';
+                    ctx.font = '700 12px "Plus Jakarta Sans", Arial, sans-serif';
+                    ctx.fillText(nameText, padX, y);
+
+                    ctx.textAlign = 'right';
+                    ctx.fillStyle = '#0f172a';
+                    ctx.font = '700 12px "Plus Jakarta Sans", Arial, sans-serif';
+                    ctx.fillText('Rp ' + Number(it.subtotal).toLocaleString('id-ID'), width - padX, y);
+
+                    y += 15;
+                    ctx.textAlign = 'left';
+                    ctx.fillStyle = '#64748b';
+                    ctx.font = '500 10.5px "Plus Jakarta Sans", Arial, sans-serif';
+                    ctx.fillText(`${it.qty}${u} x Rp ${unitPrice.toLocaleString('id-ID')}`, padX, y);
+
+                    y += 24;
+                });
+
+                drawDashedLine(y - 6);
+                y += 16;
+
+                // Totals
+                if (trx.discount_amount && Number(trx.discount_amount) > 0) {
+                    const subVal = Number(trx.subtotal || (trx.total_amount + trx.discount_amount - (trx.tax_amount || 0)));
+                    drawKeyVal('Subtotal', 'Rp ' + subVal.toLocaleString('id-ID'), false, '#475569');
+                    drawKeyVal('Diskon / Promo', '- Rp ' + Number(trx.discount_amount).toLocaleString('id-ID'), false, '#e11d48');
+                }
+                if (trx.tax_amount && Number(trx.tax_amount) > 0) {
+                    drawKeyVal('Pajak Layanan (10%)', 'Rp ' + Number(trx.tax_amount).toLocaleString('id-ID'), false, '#475569');
+                }
+
+                // Total highlight box
+                drawRoundRect(padX, y - 14, innerW, 34, 10);
+                ctx.fillStyle = '#f8fafc';
+                ctx.fill();
+                ctx.strokeStyle = '#e2e8f0';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                ctx.textAlign = 'left';
+                ctx.fillStyle = '#0f172a';
+                ctx.font = '800 12.5px "Plus Jakarta Sans", Arial, sans-serif';
+                ctx.fillText('Total Tagihan', padX + 12, y + 7);
+
+                ctx.textAlign = 'right';
+                ctx.fillStyle = '#0f172a';
+                ctx.font = '800 14px "Plus Jakarta Sans", Arial, sans-serif';
+                ctx.fillText('Rp ' + Number(trx.total_amount).toLocaleString('id-ID'), width - padX - 12, y + 7);
+                y += 38;
+
+                drawKeyVal(`Bayar (${trx.payment_method})`, 'Rp ' + Number(trx.cash_received).toLocaleString('id-ID'), false, '#334155');
+                drawKeyVal('Kembalian', 'Rp ' + Number(trx.change_amount).toLocaleString('id-ID'), true, '#047857');
+                drawKeyVal('Status Pembayaran', isPaid ? 'LUNAS' : 'BELUM LUNAS', true, isPaid ? '#047857' : '#b45309');
+
+                y += 4;
+                drawDashedLine(y);
+                y += 22;
+
+                // Footer bersih
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#334155';
+                ctx.font = '600 10.5px "Plus Jakarta Sans", Arial, sans-serif';
+                ctx.fillText('Simpan nota ini sebagai tanda terima pengambilan cucian.', width / 2, y);
+                y += 16;
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '500 10px "Plus Jakarta Sans", Arial, sans-serif';
+                ctx.fillText('Pakaian bersih, wangi & rapi adalah prioritas kami.', width / 2, y);
+
+                canvas.toBlob((blob) => {
+                    if (blob) resolve(blob);
+                    else reject(new Error('Gagal membuat gambar struk'));
+                }, 'image/png', 1.0);
+            } catch (err) {
+                reject(err);
+            }
+        });
+    }
+
+    async function downloadReceiptPhoto() {
+        if (!activeReceiptData) return;
+        try {
+            const blob = await generateReceiptImageBlob(activeReceiptData);
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Struk-${activeReceiptData.transaction_no || 'Laundry'}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 3000);
+            showToast('Foto struk berhasil diunduh (PNG).', 'success');
+        } catch (err) {
+            showToast('Gagal membuat foto struk.', 'error');
+        }
+    }
+
+    async function sendReceiptToWhatsApp() {
+        if (!activeReceiptData) return;
+
+        const btn = document.getElementById('btn-wa-receipt');
+        const waHint = document.getElementById('rcp-wa-hint');
+        const originalHtml = btn ? btn.innerHTML : '';
+
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin text-sm"></i><span>Menyiapkan Foto...</span>';
         }
 
-        document.getElementById('receipt-modal').classList.remove('hidden');
+        try {
+            const blob = await generateReceiptImageBlob(activeReceiptData);
+            const fileName = `Struk-${activeReceiptData.transaction_no || 'Laundry'}.png`;
+            const receiptFile = new File([blob], fileName, { type: 'image/png' });
+
+            const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+            // 1. Pada perangkat Mobile yang mendukung Web Share Files: kirim foto + teks langsung bersamaan ke WhatsApp
+            if (isMobile && navigator.canShare && navigator.canShare({ files: [receiptFile] })) {
+                try {
+                    await navigator.share({
+                        files: [receiptFile],
+                        title: `Struk ${activeReceiptData.transaction_no}`,
+                        text: activeReceiptWaText
+                    });
+                    showToast('Foto & teks struk siap dikirim via WhatsApp!', 'success');
+                    return;
+                } catch (shareErr) {
+                    if (shareErr && shareErr.name === 'AbortError') {
+                        return;
+                    }
+                }
+            }
+
+            // 2. Pada Desktop / Browser tanpa Web Share Files:
+            // Salin foto struk ke clipboard agar tinggal Ctrl+V di WhatsApp, sekaligus unduh file PNG cadangan, lalu buka WhatsApp dengan teks terisi
+            let copiedImage = false;
+            if (navigator.clipboard && typeof ClipboardItem !== 'undefined') {
+                try {
+                    await navigator.clipboard.write([
+                        new ClipboardItem({ 'image/png': blob })
+                    ]);
+                    copiedImage = true;
+                } catch (clipErr) {
+                    copiedImage = false;
+                }
+            }
+
+            // Unduh PNG otomatis sebagai cadangan jika clipboard gagal atau ingin drag-and-drop
+            if (!copiedImage) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 4000);
+            }
+
+            const waUrl = `https://api.whatsapp.com/send?phone=${activeReceiptWaPhone}&text=${encodeURIComponent(activeReceiptWaText)}`;
+            window.open(waUrl, '_blank', 'noopener');
+
+            if (waHint) {
+                waHint.classList.remove('hidden');
+                waHint.innerHTML = copiedImage
+                    ? '<i class="fa-solid fa-circle-check mr-1"></i><strong>Foto struk sudah disalin otomatis!</strong> Di chat WhatsApp yang terbuka, tekan <strong>Ctrl + V</strong> (Tempel) agar foto struk terkirim bersamaan dengan teks.'
+                    : `<i class="fa-solid fa-download mr-1"></i><strong>Foto struk (${fileName}) sudah diunduh!</strong> Lampirkan file tersebut di chat WhatsApp yang terbuka agar terkirim bersama teks.`;
+            }
+
+            showToast(
+                copiedImage
+                    ? 'Foto struk disalin! Tekan Ctrl+V di WhatsApp untuk mengirim bersama teks.'
+                    : 'Foto struk diunduh & WhatsApp dibuka. Lampirkan foto lalu kirim bersama teks.',
+                'success'
+            );
+        } catch (err) {
+            const waUrl = `https://api.whatsapp.com/send?phone=${activeReceiptWaPhone}&text=${encodeURIComponent(activeReceiptWaText)}`;
+            window.open(waUrl, '_blank', 'noopener');
+            showToast('Membuka WhatsApp dengan rincian struk.', 'info');
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+        }
     }
 
     function closeReceiptModal() {
@@ -2282,5 +2697,37 @@ $userBranchId = $_SESSION['user']['branch_id'] ?? 2; // Default Cabang 1 jika be
         window.open(waUrl, '_blank');
     }
 </script>
+
+<style>
+@media print {
+    body * {
+        visibility: hidden !important;
+    }
+    #receipt-modal,
+    #receipt-print-area,
+    #receipt-print-area * {
+        visibility: visible !important;
+    }
+    #receipt-modal {
+        position: static !important;
+        background: transparent !important;
+        padding: 0 !important;
+    }
+    #receipt-print-area {
+        position: fixed !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 80mm !important;
+        border: none !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+        padding: 4mm !important;
+        background: #ffffff !important;
+    }
+    #receipt-chk-badge {
+        display: none !important;
+    }
+}
+</style>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
