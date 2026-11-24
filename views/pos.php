@@ -1911,105 +1911,290 @@ $userBranchId = $_SESSION['user']['branch_id'] ?? 2; // Default Cabang 1 jika be
         const branchLabel = (document.getElementById('rcp-branch-name')?.innerText || 'PJBL Komak Laundry').trim();
         const cashierLabel = (document.getElementById('rcp-cashier')?.innerText || 'Kasir').trim();
         const custName = trx.customer_name || 'Pelanggan Umum';
-        const custPhone = trx.customer_phone || '';
-        const rackNo = trx.rack_no || '';
-        const estimateDate = trx.estimated_completion || '';
+        const custPhone = trx.customer_phone || '-';
+        const rackNo = trx.rack_no || '-';
+        const estimateDate = trx.estimated_completion || '2 Hari';
         const isPaid = Number(trx.cash_received) >= Number(trx.total_amount);
 
-        const itemsRows = (trx.items || []).map(it => {
+        const itemsRows = (trx.items || []).map((it, idx) => {
             const u = it.unit ? ` ${escHtml(it.unit)}` : '';
             const unitPrice = Number(it.price || (it.qty ? it.subtotal / it.qty : 0));
             return `
-                <div class="item-row">
-                    <div class="item-left">
-                        <div class="item-name">${escHtml(it.name)}</div>
-                        <div class="item-meta">${escHtml(it.qty)}${u} x Rp ${unitPrice.toLocaleString('id-ID')}</div>
-                    </div>
-                    <div class="item-sub">Rp ${Number(it.subtotal).toLocaleString('id-ID')}</div>
-                </div>
+                <tr>
+                    <td class="col-no">${idx + 1}</td>
+                    <td class="col-name">${escHtml(it.name)}</td>
+                    <td class="col-qty mono">${escHtml(it.qty)}${u}</td>
+                    <td class="col-price mono">Rp ${unitPrice.toLocaleString('id-ID')}</td>
+                    <td class="col-sub mono">Rp ${Number(it.subtotal).toLocaleString('id-ID')}</td>
+                </tr>
             `;
         }).join('');
 
         let extraTotals = '';
         if (trx.discount_amount && Number(trx.discount_amount) > 0) {
             const subVal = Number(trx.subtotal || (trx.total_amount + trx.discount_amount - (trx.tax_amount || 0)));
-            extraTotals += `<div class="kv"><span>Subtotal</span><span class="mono">Rp ${subVal.toLocaleString('id-ID')}</span></div>`;
-            extraTotals += `<div class="kv"><span>Diskon / Promo</span><span class="mono">- Rp ${Number(trx.discount_amount).toLocaleString('id-ID')}</span></div>`;
+            extraTotals += `<div class="sum-row"><span>Subtotal</span><span class="mono">Rp ${subVal.toLocaleString('id-ID')}</span></div>`;
+            extraTotals += `<div class="sum-row discount"><span>Diskon / Promo</span><span class="mono">- Rp ${Number(trx.discount_amount).toLocaleString('id-ID')}</span></div>`;
         }
         if (trx.tax_amount && Number(trx.tax_amount) > 0) {
-            extraTotals += `<div class="kv"><span>Pajak Layanan (10%)</span><span class="mono">Rp ${Number(trx.tax_amount).toLocaleString('id-ID')}</span></div>`;
+            extraTotals += `<div class="sum-row"><span>Pajak Layanan (10%)</span><span class="mono">Rp ${Number(trx.tax_amount).toLocaleString('id-ID')}</span></div>`;
         }
 
         const html = `<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Struk ${escHtml(trx.transaction_no)}</title>
+    <title>Nota ${escHtml(trx.transaction_no)} - PJBL Komak Laundry</title>
     <style>
-        @page { size: 80mm auto; margin: 4mm; }
+        @page { size: A4 portrait; margin: 14mm; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: "Segoe UI", Arial, sans-serif;
             color: #0f172a;
             background: #ffffff;
-            width: 72mm;
-            margin: 0 auto;
-            padding: 6px 4px;
-            font-size: 11px;
-            line-height: 1.45;
+            width: 100%;
+            font-size: 13px;
+            line-height: 1.5;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
         }
-        .header { text-align: center; padding-bottom: 8px; border-bottom: 1px dashed #94a3b8; }
-        .brand { font-size: 15px; font-weight: 800; letter-spacing: 0.3px; text-transform: uppercase; }
-        .sub { font-size: 10px; color: #475569; margin-top: 2px; }
-        .section { padding: 8px 0; border-bottom: 1px dashed #94a3b8; }
-        .kv { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 3px; }
+        .sheet {
+            width: 100%;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 14px;
+            padding: 26px 28px;
+            background: #ffffff;
+        }
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            padding-bottom: 18px;
+            border-bottom: 2px solid #0f172a;
+        }
+        .brand {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            color: #000079;
+        }
+        .brand-sub {
+            font-size: 12.5px;
+            color: #475569;
+            margin-top: 3px;
+        }
+        .doc-meta {
+            text-align: right;
+        }
+        .doc-title {
+            font-size: 14px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #0f172a;
+        }
+        .doc-no {
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-top: 3px;
+        }
+        .badge-status {
+            display: inline-block;
+            margin-top: 6px;
+            padding: 3px 12px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            background: ${isPaid ? '#dcfce7' : '#fef3c7'};
+            color: ${isPaid ? '#166534' : '#92400e'};
+            border: 1px solid ${isPaid ? '#86efac' : '#fcd34d'};
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px 28px;
+            padding: 18px 0;
+            border-bottom: 1px dashed #cbd5e1;
+        }
+        .info-box {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .kv {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 12.5px;
+        }
         .kv .k { color: #64748b; }
-        .kv .v { font-weight: 600; text-align: right; }
+        .kv .v { font-weight: 600; color: #0f172a; text-align: right; }
         .mono { font-family: Consolas, "Courier New", monospace; }
-        .pill-row { text-align: center; margin-top: 5px; font-size: 10px; font-weight: 700; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px 6px; }
-        .items-head { display: flex; justify-content: space-between; font-size: 9px; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 6px; }
-        .item-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
-        .item-name { font-weight: 700; color: #0f172a; }
-        .item-meta { font-size: 10px; color: #64748b; font-family: Consolas, "Courier New", monospace; }
-        .item-sub { font-weight: 700; font-family: Consolas, "Courier New", monospace; white-space: nowrap; }
-        .total-box { display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 13px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px 8px; margin: 6px 0; }
-        .status-badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 10px; font-weight: 800; border: 1px solid #0f172a; }
-        .footer { text-align: center; padding-top: 8px; font-size: 10px; color: #475569; }
-        .footer strong { display: block; color: #0f172a; margin-bottom: 2px; }
+        .pill-bar {
+            margin-top: 14px;
+            display: flex;
+            gap: 12px;
+        }
+        .pill {
+            flex: 1;
+            text-align: center;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            color: #1e293b;
+        }
+        .items-section {
+            padding: 18px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        thead th {
+            background: #f1f5f9;
+            color: #334155;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 10px 12px;
+            border-top: 1px solid #cbd5e1;
+            border-bottom: 1px solid #cbd5e1;
+            text-align: left;
+        }
+        tbody td {
+            padding: 11px 12px;
+            border-bottom: 1px dashed #e2e8f0;
+            font-size: 13px;
+            vertical-align: top;
+        }
+        .col-no { width: 40px; text-align: center; color: #64748b; }
+        .col-name { font-weight: 700; color: #0f172a; }
+        .col-qty { width: 100px; text-align: center; }
+        .col-price { width: 130px; text-align: right; color: #475569; }
+        .col-sub { width: 140px; text-align: right; font-weight: 700; color: #0f172a; }
+        thead th.col-no { text-align: center; }
+        thead th.col-qty { text-align: center; }
+        thead th.col-price, thead th.col-sub { text-align: right; }
+        .summary-wrap {
+            display: flex;
+            justify-content: flex-end;
+            padding-top: 12px;
+            border-top: 1.5px solid #cbd5e1;
+        }
+        .summary-box {
+            width: 340px;
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+        .sum-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #334155;
+            padding: 0 6px;
+        }
+        .sum-row.discount { color: #e11d48; }
+        .sum-row.change { color: #047857; font-weight: 700; }
+        .total-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 800;
+            font-size: 16px;
+            color: #0f172a;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin: 4px 0;
+        }
+        .footer {
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px dashed #cbd5e1;
+            text-align: center;
+            font-size: 12px;
+            color: #475569;
+        }
+        .footer strong {
+            display: block;
+            color: #0f172a;
+            font-size: 12.5px;
+            margin-bottom: 3px;
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="brand">PJBL KOMAK LAUNDRY</div>
-        <div class="sub">${escHtml(branchLabel)}</div>
-    </div>
-    <div class="section">
-        <div class="kv"><span class="k">No. Nota</span><span class="v mono">${escHtml(trx.transaction_no)}</span></div>
-        <div class="kv"><span class="k">Tanggal</span><span class="v mono">${escHtml(trx.date)}</span></div>
-        <div class="kv"><span class="k">Kasir</span><span class="v">${escHtml(cashierLabel)}</span></div>
-        <div class="kv"><span class="k">Pelanggan</span><span class="v">${escHtml(custName)}</span></div>
-        ${custPhone ? `<div class="kv"><span class="k">WhatsApp</span><span class="v mono">${escHtml(custPhone)}</span></div>` : ''}
-        ${(rackNo || estimateDate) ? `<div class="pill-row">Rak: ${escHtml(rackNo || '-')} &nbsp;|&nbsp; Siap: ${escHtml(estimateDate || '2 Hari')}</div>` : ''}
-    </div>
-    <div class="section">
-        <div class="items-head"><span>Rincian Layanan</span><span>Subtotal</span></div>
-        ${itemsRows}
-    </div>
-    <div class="section">
-        ${extraTotals}
-        <div class="total-box">
-            <span>Total Tagihan</span>
-            <span class="mono">Rp ${Number(trx.total_amount).toLocaleString('id-ID')}</span>
+    <div class="sheet">
+        <div class="top-header">
+            <div>
+                <div class="brand">PJBL KOMAK LAUNDRY</div>
+                <div class="brand-sub">${escHtml(branchLabel)}</div>
+            </div>
+            <div class="doc-meta">
+                <div class="doc-title">Nota Transaksi</div>
+                <div class="doc-no">${escHtml(trx.transaction_no)}</div>
+                <div class="badge-status">${isPaid ? 'LUNAS' : 'BELUM LUNAS'}</div>
+            </div>
         </div>
-        <div class="kv"><span class="k">Bayar (${escHtml(trx.payment_method)})</span><span class="v mono">Rp ${Number(trx.cash_received).toLocaleString('id-ID')}</span></div>
-        <div class="kv"><span class="k">Kembalian</span><span class="v mono">Rp ${Number(trx.change_amount).toLocaleString('id-ID')}</span></div>
-        <div class="kv" style="margin-top:4px;"><span class="k">Status Pembayaran</span><span class="status-badge">${isPaid ? 'LUNAS' : 'BELUM LUNAS'}</span></div>
-    </div>
-    <div class="footer">
-        <strong>Simpan nota ini sebagai tanda terima pengambilan cucian.</strong>
-        <span>Pakaian bersih, wangi &amp; rapi adalah prioritas kami.</span>
+
+        <div class="info-grid">
+            <div class="info-box">
+                <div class="kv"><span class="k">Tanggal Transaksi</span><span class="v mono">${escHtml(trx.date)}</span></div>
+                <div class="kv"><span class="k">Kasir Bertugas</span><span class="v">${escHtml(cashierLabel)}</span></div>
+                <div class="kv"><span class="k">Metode Pembayaran</span><span class="v">${escHtml(trx.payment_method)}</span></div>
+            </div>
+            <div class="info-box">
+                <div class="kv"><span class="k">Nama Pelanggan</span><span class="v">${escHtml(custName)}</span></div>
+                <div class="kv"><span class="k">No. WhatsApp</span><span class="v mono">${escHtml(custPhone)}</span></div>
+                <div class="kv"><span class="k">Lokasi Rak / Estimasi</span><span class="v">Rak: ${escHtml(rackNo)} &bull; Siap: ${escHtml(estimateDate)}</span></div>
+            </div>
+        </div>
+
+        <div class="items-section">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="col-no">No</th>
+                        <th>Rincian Layanan / Produk</th>
+                        <th class="col-qty">Jumlah</th>
+                        <th class="col-price">Harga Satuan</th>
+                        <th class="col-sub">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${itemsRows}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="summary-wrap">
+            <div class="summary-box">
+                ${extraTotals}
+                <div class="total-box">
+                    <span>Total Tagihan</span>
+                    <span class="mono">Rp ${Number(trx.total_amount).toLocaleString('id-ID')}</span>
+                </div>
+                <div class="sum-row"><span>Bayar (${escHtml(trx.payment_method)})</span><span class="mono">Rp ${Number(trx.cash_received).toLocaleString('id-ID')}</span></div>
+                <div class="sum-row change"><span>Kembalian</span><span class="mono">Rp ${Number(trx.change_amount).toLocaleString('id-ID')}</span></div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <strong>Simpan nota ini sebagai tanda terima pengambilan cucian.</strong>
+            <span>Pakaian bersih, wangi &amp; rapi adalah prioritas kami.</span>
+        </div>
     </div>
 </body>
 </html>`;
