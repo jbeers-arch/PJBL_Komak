@@ -342,7 +342,7 @@ $userBranchId = $_SESSION['user']['branch_id'] ?? 2; // Default Cabang 1 jika be
                         </div>
                         <div class="flex items-center justify-between gap-2">
                             <span class="text-slate-600">Diskon Promosi (Rp):</span>
-                            <input type="number" id="cart-discount" oninput="calculateGrandTotal()" placeholder="0" min="0"
+                            <input type="number" id="cart-discount" oninput="calculateGrandTotal()" placeholder="0" min="0" step="1000"
                                    class="w-28 p-1 text-right text-xs rounded-lg border border-slate-300 font-mono font-bold text-slate-900 focus:ring-1 focus:ring-emerald-500">
                         </div>
                         <div class="flex items-center justify-between">
@@ -371,7 +371,7 @@ $userBranchId = $_SESSION['user']['branch_id'] ?? 2; // Default Cabang 1 jika be
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Uang Diterima (Rp)</label>
-                            <input type="number" id="cash-received" oninput="calculateChange()" placeholder="0"
+                            <input type="number" id="cash-received" oninput="calculateChange()" placeholder="0" min="0" step="1000"
                                    class="w-full p-2 text-xs rounded-xl border border-slate-300 font-mono font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500">
                         </div>
                     </div>
@@ -379,6 +379,7 @@ $userBranchId = $_SESSION['user']['branch_id'] ?? 2; // Default Cabang 1 jika be
                     <!-- Quick Cash Preset Buttons -->
                     <div class="flex items-center gap-1.5 overflow-x-auto pb-0.5">
                         <button type="button" onclick="setQuickCash('pas')" class="px-2 py-1 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 text-[10px] font-bold shrink-0 transition-colors">Uang Pas</button>
+                        <button type="button" onclick="setQuickCash(5000)" class="px-2 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-[10px] font-bold shrink-0 transition-colors">5k</button>
                         <button type="button" onclick="setQuickCash(10000)" class="px-2 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-[10px] font-bold shrink-0 transition-colors">10k</button>
                         <button type="button" onclick="setQuickCash(20000)" class="px-2 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-[10px] font-bold shrink-0 transition-colors">20k</button>
                         <button type="button" onclick="setQuickCash(50000)" class="px-2 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-[10px] font-bold shrink-0 transition-colors">50k</button>
