@@ -506,7 +506,7 @@ $userBranchId = $_SESSION['user']['branch_id'] ?? 2; // Default Cabang 1 jika be
         <div id="rcp-wa-hint" class="hidden px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200/80 text-[11px] text-emerald-800 leading-snug"></div>
 
         <div class="flex items-center gap-2">
-            <button type="button" onclick="window.print()" class="px-3.5 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-xs transition-colors flex items-center justify-center space-x-1.5 cursor-pointer" title="Cetak Struk">
+            <button type="button" onclick="printReceipt()" class="px-3.5 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-xs transition-colors flex items-center justify-center space-x-1.5 cursor-pointer" title="Cetak Struk">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                 <span>Cetak</span>
             </button>
@@ -1900,6 +1900,148 @@ $userBranchId = $_SESSION['user']['branch_id'] ?? 2; // Default Cabang 1 jika be
         }
     }
 
+    function printReceipt() {
+        if (!activeReceiptData) {
+            showToast('Data struk tidak tersedia untuk dicetak.', 'error');
+            return;
+        }
+
+        const trx = activeReceiptData;
+        const escHtml = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        const branchLabel = (document.getElementById('rcp-branch-name')?.innerText || 'PJBL Komak Laundry').trim();
+        const cashierLabel = (document.getElementById('rcp-cashier')?.innerText || 'Kasir').trim();
+        const custName = trx.customer_name || 'Pelanggan Umum';
+        const custPhone = trx.customer_phone || '';
+        const rackNo = trx.rack_no || '';
+        const estimateDate = trx.estimated_completion || '';
+        const isPaid = Number(trx.cash_received) >= Number(trx.total_amount);
+
+        const itemsRows = (trx.items || []).map(it => {
+            const u = it.unit ? ` ${escHtml(it.unit)}` : '';
+            const unitPrice = Number(it.price || (it.qty ? it.subtotal / it.qty : 0));
+            return `
+                <div class="item-row">
+                    <div class="item-left">
+                        <div class="item-name">${escHtml(it.name)}</div>
+                        <div class="item-meta">${escHtml(it.qty)}${u} x Rp ${unitPrice.toLocaleString('id-ID')}</div>
+                    </div>
+                    <div class="item-sub">Rp ${Number(it.subtotal).toLocaleString('id-ID')}</div>
+                </div>
+            `;
+        }).join('');
+
+        let extraTotals = '';
+        if (trx.discount_amount && Number(trx.discount_amount) > 0) {
+            const subVal = Number(trx.subtotal || (trx.total_amount + trx.discount_amount - (trx.tax_amount || 0)));
+            extraTotals += `<div class="kv"><span>Subtotal</span><span class="mono">Rp ${subVal.toLocaleString('id-ID')}</span></div>`;
+            extraTotals += `<div class="kv"><span>Diskon / Promo</span><span class="mono">- Rp ${Number(trx.discount_amount).toLocaleString('id-ID')}</span></div>`;
+        }
+        if (trx.tax_amount && Number(trx.tax_amount) > 0) {
+            extraTotals += `<div class="kv"><span>Pajak Layanan (10%)</span><span class="mono">Rp ${Number(trx.tax_amount).toLocaleString('id-ID')}</span></div>`;
+        }
+
+        const html = `<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Struk ${escHtml(trx.transaction_no)}</title>
+    <style>
+        @page { size: 80mm auto; margin: 4mm; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            color: #0f172a;
+            background: #ffffff;
+            width: 72mm;
+            margin: 0 auto;
+            padding: 6px 4px;
+            font-size: 11px;
+            line-height: 1.45;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .header { text-align: center; padding-bottom: 8px; border-bottom: 1px dashed #94a3b8; }
+        .brand { font-size: 15px; font-weight: 800; letter-spacing: 0.3px; text-transform: uppercase; }
+        .sub { font-size: 10px; color: #475569; margin-top: 2px; }
+        .section { padding: 8px 0; border-bottom: 1px dashed #94a3b8; }
+        .kv { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 3px; }
+        .kv .k { color: #64748b; }
+        .kv .v { font-weight: 600; text-align: right; }
+        .mono { font-family: Consolas, "Courier New", monospace; }
+        .pill-row { text-align: center; margin-top: 5px; font-size: 10px; font-weight: 700; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px 6px; }
+        .items-head { display: flex; justify-content: space-between; font-size: 9px; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 6px; }
+        .item-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
+        .item-name { font-weight: 700; color: #0f172a; }
+        .item-meta { font-size: 10px; color: #64748b; font-family: Consolas, "Courier New", monospace; }
+        .item-sub { font-weight: 700; font-family: Consolas, "Courier New", monospace; white-space: nowrap; }
+        .total-box { display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 13px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px 8px; margin: 6px 0; }
+        .status-badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 10px; font-weight: 800; border: 1px solid #0f172a; }
+        .footer { text-align: center; padding-top: 8px; font-size: 10px; color: #475569; }
+        .footer strong { display: block; color: #0f172a; margin-bottom: 2px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="brand">PJBL KOMAK LAUNDRY</div>
+        <div class="sub">${escHtml(branchLabel)}</div>
+    </div>
+    <div class="section">
+        <div class="kv"><span class="k">No. Nota</span><span class="v mono">${escHtml(trx.transaction_no)}</span></div>
+        <div class="kv"><span class="k">Tanggal</span><span class="v mono">${escHtml(trx.date)}</span></div>
+        <div class="kv"><span class="k">Kasir</span><span class="v">${escHtml(cashierLabel)}</span></div>
+        <div class="kv"><span class="k">Pelanggan</span><span class="v">${escHtml(custName)}</span></div>
+        ${custPhone ? `<div class="kv"><span class="k">WhatsApp</span><span class="v mono">${escHtml(custPhone)}</span></div>` : ''}
+        ${(rackNo || estimateDate) ? `<div class="pill-row">Rak: ${escHtml(rackNo || '-')} &nbsp;|&nbsp; Siap: ${escHtml(estimateDate || '2 Hari')}</div>` : ''}
+    </div>
+    <div class="section">
+        <div class="items-head"><span>Rincian Layanan</span><span>Subtotal</span></div>
+        ${itemsRows}
+    </div>
+    <div class="section">
+        ${extraTotals}
+        <div class="total-box">
+            <span>Total Tagihan</span>
+            <span class="mono">Rp ${Number(trx.total_amount).toLocaleString('id-ID')}</span>
+        </div>
+        <div class="kv"><span class="k">Bayar (${escHtml(trx.payment_method)})</span><span class="v mono">Rp ${Number(trx.cash_received).toLocaleString('id-ID')}</span></div>
+        <div class="kv"><span class="k">Kembalian</span><span class="v mono">Rp ${Number(trx.change_amount).toLocaleString('id-ID')}</span></div>
+        <div class="kv" style="margin-top:4px;"><span class="k">Status Pembayaran</span><span class="status-badge">${isPaid ? 'LUNAS' : 'BELUM LUNAS'}</span></div>
+    </div>
+    <div class="footer">
+        <strong>Simpan nota ini sebagai tanda terima pengambilan cucian.</strong>
+        <span>Pakaian bersih, wangi &amp; rapi adalah prioritas kami.</span>
+    </div>
+</body>
+</html>`;
+
+        let iframe = document.getElementById('komak-receipt-print-frame');
+        if (iframe) iframe.remove();
+
+        iframe = document.createElement('iframe');
+        iframe.id = 'komak-receipt-print-frame';
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = '0';
+        document.body.appendChild(iframe);
+
+        const doc = iframe.contentWindow.document;
+        doc.open();
+        doc.write(html);
+        doc.close();
+
+        setTimeout(() => {
+            try {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+            } catch (e) {
+                showToast('Gagal membuka dialog cetak.', 'error');
+            }
+        }, 150);
+    }
+
     async function sendReceiptToWhatsApp() {
         if (!activeReceiptData) return;
 
@@ -1913,36 +2055,38 @@ $userBranchId = $_SESSION['user']['branch_id'] ?? 2; // Default Cabang 1 jika be
         }
 
         try {
-            const blob = await generateReceiptImageBlob(activeReceiptData);
             const fileName = `Struk-${activeReceiptData.transaction_no || 'Laundry'}.png`;
-            const receiptFile = new File([blob], fileName, { type: 'image/png' });
-
             const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-            // 1. Pada perangkat Mobile yang mendukung Web Share Files: kirim foto + teks langsung bersamaan ke WhatsApp
-            if (isMobile && navigator.canShare && navigator.canShare({ files: [receiptFile] })) {
-                try {
-                    await navigator.share({
-                        files: [receiptFile],
-                        title: `Struk ${activeReceiptData.transaction_no}`,
-                        text: activeReceiptWaText
-                    });
-                    showToast('Foto & teks struk siap dikirim via WhatsApp!', 'success');
-                    return;
-                } catch (shareErr) {
-                    if (shareErr && shareErr.name === 'AbortError') {
+            // 1. Pada perangkat Mobile: gunakan Web Share API agar file PNG + teks terkirim bersamaan ke WhatsApp
+            if (isMobile) {
+                const blob = await generateReceiptImageBlob(activeReceiptData);
+                const receiptFile = new File([blob], fileName, { type: 'image/png' });
+                if (navigator.canShare && navigator.canShare({ files: [receiptFile] })) {
+                    try {
+                        await navigator.share({
+                            files: [receiptFile],
+                            title: `Struk ${activeReceiptData.transaction_no}`,
+                            text: activeReceiptWaText
+                        });
+                        showToast('Foto & teks struk siap dikirim via WhatsApp!', 'success');
                         return;
+                    } catch (shareErr) {
+                        if (shareErr && shareErr.name === 'AbortError') return;
                     }
                 }
             }
 
-            // 2. Pada Desktop / Browser tanpa Web Share Files:
-            // Salin foto struk ke clipboard agar tinggal Ctrl+V di WhatsApp, sekaligus unduh file PNG cadangan, lalu buka WhatsApp dengan teks terisi
+            // 2. Pada Laptop / Desktop:
+            // Mulai penyalinan gambar ke clipboard SECARA SINKRON menggunakan Promise di dalam ClipboardItem
+            // agar Chrome/Edge tidak memblokir akses clipboard karena user-gesture timeout
             let copiedImage = false;
+            const blobPromise = generateReceiptImageBlob(activeReceiptData);
+
             if (navigator.clipboard && typeof ClipboardItem !== 'undefined') {
                 try {
                     await navigator.clipboard.write([
-                        new ClipboardItem({ 'image/png': blob })
+                        new ClipboardItem({ 'image/png': blobPromise })
                     ]);
                     copiedImage = true;
                 } catch (clipErr) {
@@ -1950,7 +2094,7 @@ $userBranchId = $_SESSION['user']['branch_id'] ?? 2; // Default Cabang 1 jika be
                 }
             }
 
-            // Unduh PNG otomatis sebagai cadangan jika clipboard gagal atau ingin drag-and-drop
+            const blob = await blobPromise;
             if (!copiedImage) {
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -1962,22 +2106,24 @@ $userBranchId = $_SESSION['user']['branch_id'] ?? 2; // Default Cabang 1 jika be
                 setTimeout(() => URL.revokeObjectURL(url), 4000);
             }
 
-            const waUrl = `https://api.whatsapp.com/send?phone=${activeReceiptWaPhone}&text=${encodeURIComponent(activeReceiptWaText)}`;
-            window.open(waUrl, '_blank', 'noopener');
-
             if (waHint) {
                 waHint.classList.remove('hidden');
                 waHint.innerHTML = copiedImage
-                    ? '<i class="fa-solid fa-circle-check mr-1"></i><strong>Foto struk sudah disalin otomatis!</strong> Di chat WhatsApp yang terbuka, tekan <strong>Ctrl + V</strong> (Tempel) agar foto struk terkirim bersamaan dengan teks.'
-                    : `<i class="fa-solid fa-download mr-1"></i><strong>Foto struk (${fileName}) sudah diunduh!</strong> Lampirkan file tersebut di chat WhatsApp yang terbuka agar terkirim bersama teks.`;
+                    ? '<i class="fa-solid fa-circle-check mr-1"></i><strong>Foto struk sudah disalin otomatis ke Clipboard!</strong> Di jendela WhatsApp yang terbuka, cukup tekan <strong>Ctrl + V</strong> (Tempel) agar foto struk langsung terlampir bersama teks.'
+                    : `<i class="fa-solid fa-download mr-1"></i><strong>Foto struk (${fileName}) sudah diunduh otomatis!</strong> Tarik/lampirkan file tersebut ke chat WhatsApp agar terkirim bersama teks.`;
             }
 
             showToast(
                 copiedImage
-                    ? 'Foto struk disalin! Tekan Ctrl+V di WhatsApp untuk mengirim bersama teks.'
+                    ? 'Foto struk tersalin! Di WhatsApp tekan Ctrl + V untuk melampirkan foto bersama teks.'
                     : 'Foto struk diunduh & WhatsApp dibuka. Lampirkan foto lalu kirim bersama teks.',
                 'success'
             );
+
+            const waUrl = `https://api.whatsapp.com/send?phone=${activeReceiptWaPhone}&text=${encodeURIComponent(activeReceiptWaText)}`;
+            setTimeout(() => {
+                window.open(waUrl, '_blank', 'noopener');
+            }, 250);
         } catch (err) {
             const waUrl = `https://api.whatsapp.com/send?phone=${activeReceiptWaPhone}&text=${encodeURIComponent(activeReceiptWaText)}`;
             window.open(waUrl, '_blank', 'noopener');
@@ -2697,37 +2843,5 @@ $userBranchId = $_SESSION['user']['branch_id'] ?? 2; // Default Cabang 1 jika be
         window.open(waUrl, '_blank');
     }
 </script>
-
-<style>
-@media print {
-    body * {
-        visibility: hidden !important;
-    }
-    #receipt-modal,
-    #receipt-print-area,
-    #receipt-print-area * {
-        visibility: visible !important;
-    }
-    #receipt-modal {
-        position: static !important;
-        background: transparent !important;
-        padding: 0 !important;
-    }
-    #receipt-print-area {
-        position: fixed !important;
-        left: 0 !important;
-        top: 0 !important;
-        width: 80mm !important;
-        border: none !important;
-        box-shadow: none !important;
-        margin: 0 !important;
-        padding: 4mm !important;
-        background: #ffffff !important;
-    }
-    #receipt-chk-badge {
-        display: none !important;
-    }
-}
-</style>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

@@ -15,7 +15,7 @@ requireAuth(['akuntan']);
                 <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 Export CSV
             </button>
-            <button onclick="window.print()" class="w-full sm:w-auto justify-center inline-flex items-center px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-xs transition-all">
+            <button onclick="printActiveReport()" class="w-full sm:w-auto justify-center inline-flex items-center px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-xs transition-all cursor-pointer">
                 <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                 Cetak Laporan
             </button>
@@ -1353,6 +1353,90 @@ requireAuth(['akuntan']);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    }
+
+    function printActiveReport() {
+        const activePanel = document.querySelector('[id^="tab-content-"]:not(.hidden)');
+        if (!activePanel) {
+            window.print();
+            return;
+        }
+
+        // Kumpulkan semua style aktif (termasuk Tailwind CDN yang sudah ter-render di document.head)
+        let headStyles = '';
+        document.querySelectorAll('head style, head link[rel="stylesheet"]').forEach(el => {
+            headStyles += el.outerHTML + '\n';
+        });
+
+        const printHtml = `<!DOCTYPE html>
+<html lang="id" class="light">
+<head>
+    <meta charset="UTF-8">
+    <title>Laporan Keuangan - PJBL Komak</title>
+    ${headStyles}
+    <style>
+        @page { size: A4 portrait; margin: 12mm; }
+        html, body {
+            height: auto !important;
+            overflow: visible !important;
+            background: #ffffff !important;
+            color: #0f172a !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        .print-report-wrapper {
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            background: #ffffff !important;
+        }
+        .print-report-wrapper > div {
+            max-width: 100% !important;
+            width: 100% !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 4px !important;
+            margin: 0 !important;
+            background: #ffffff !important;
+        }
+        .no-print, button { display: none !important; }
+        tr, .avoid-break { break-inside: avoid; page-break-inside: avoid; }
+    </style>
+</head>
+<body>
+    <div class="print-report-wrapper">${activePanel.outerHTML}</div>
+</body>
+</html>`;
+
+        let iframe = document.getElementById('komak-report-print-frame');
+        if (iframe) iframe.remove();
+
+        iframe = document.createElement('iframe');
+        iframe.id = 'komak-report-print-frame';
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = '0';
+        document.body.appendChild(iframe);
+
+        const doc = iframe.contentWindow.document;
+        doc.open();
+        doc.write(printHtml);
+        doc.close();
+
+        setTimeout(() => {
+            try {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+            } catch (e) {
+                window.print();
+            }
+        }, 250);
     }
 </script>
 
